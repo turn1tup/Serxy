@@ -1,5 +1,9 @@
 # Serxy
 
+`Serxy`是一款用Python编写的`代理服务器`与`代理池`的结合体，它可以根据客户端的HTTP/HTTPS请求中的`Host`字段来为该种请求创建并维护一个代理池。代理池的功能参考`Configuration/ProConfig.ini`配置文件。
+
+
+
 python3.4+  unix/linux
 
 三方库 `requirement.txt`
@@ -15,6 +19,7 @@ python3.4+  unix/linux
 ### 注意事项：
 
 1）不要更改系统时间
+
 2）mongodb 匿名访问
 
 
