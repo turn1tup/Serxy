@@ -17,7 +17,7 @@
 
 from __future__ import absolute_import, division, print_function, \
     with_statement
-
+import os
 import time
 import socket
 import errno
@@ -104,14 +104,8 @@ class TCPRelayHandler(object):
         self._remote_sock = None
         self._config = config
         self._dns_resolver = dns_resolver
-
-        # TCP Relay works as either sslocal or ssserver
-        # if is_local, this is sslocal
         self._is_local = is_local
         self._stage = STAGE_INIT
-        #
-        #self._encryptor = encrypt.Encryptor(config['password'],
-        #                                    config['method'])
         self._fastopen_connected = False
         self._data_to_write_to_local = []
         self._data_to_write_to_remote = []
@@ -123,8 +117,7 @@ class TCPRelayHandler(object):
             self._forbidden_iplist = config['forbidden_ip']
         else:
             self._forbidden_iplist = None
-        if is_local:
-            self._chosen_server = self._get_a_server()
+
         fd_to_handlers[local_sock.fileno()] = self
         local_sock.setblocking(False)
         local_sock.setsockopt(socket.SOL_TCP, socket.TCP_NODELAY, 1)
@@ -237,45 +230,7 @@ class TCPRelayHandler(object):
         return True
 
     def _handle_stage_connecting(self, data):
-        if self._is_local:
-            #
-            #data = self._encryptor.encrypt(data)
-            #
-            data = data
         self._data_to_write_to_remote.append(data)
-        if self._is_local and not self._fastopen_connected and \
-                self._config['fast_open']:
-            # for sslocal and fastopen, we basically wait for data and use
-            # sendto to connect
-            try:
-                # only connect once
-                self._fastopen_connected = True
-                remote_sock = \
-                    self._create_remote_socket(self._chosen_server[0],
-                                               self._chosen_server[1])
-                self._loop.add(remote_sock, eventloop.POLL_ERR, self._server)
-                data = b''.join(self._data_to_write_to_remote)
-                l = len(data)
-                s = remote_sock.sendto(data, MSG_FASTOPEN, self._chosen_server)
-                if s < l:
-                    data = data[s:]
-                    self._data_to_write_to_remote = [data]
-                else:
-                    self._data_to_write_to_remote = []
-                self._update_stream(STREAM_UP, WAIT_STATUS_READWRITING)
-            except (OSError, IOError) as e:
-                if eventloop.errno_from_exception(e) == errno.EINPROGRESS:
-                    # in this case data is not sent at all
-                    self._update_stream(STREAM_UP, WAIT_STATUS_READWRITING)
-                elif eventloop.errno_from_exception(e) == errno.ENOTCONN:
-                    logging.error('fast open not supported on this OS')
-                    self._config['fast_open'] = False
-                    self.destroy()
-                else:
-                    shell.print_exception(e)
-                    if self._config['verbose']:
-                        traceback.print_exc()
-                    self.destroy()
 
     def _remove_proxy(self,proxy=None):
         '''
@@ -417,9 +372,6 @@ class TCPRelayHandler(object):
                 try:
                     self._stage = STAGE_CONNECTING
                     remote_addr = ip
-                    #if self._is_local:
-                    #    remote_port = self._chosen_server[1]
-                    #else:
                     remote_port = self._remote_address[1]
 
                     remote_sock = self._create_remote_socket(remote_addr,
@@ -462,30 +414,19 @@ class TCPRelayHandler(object):
             self.destroy()
             return
         self._update_activity(len(data))
-        if not is_local:
-            #
-            #data = self._encryptor.decrypt(data)
-            #
-            data = data
-            if not data:
-                return
+        if not data:
+            return
         if self._stage == STAGE_STREAM:
-            if self._is_local:
-                #
-                #data = self._encryptor.encrypt(data)
-                #
-                data = data
             self._write_to_sock(data, self._remote_sock)
             return
-        elif is_local and self._stage == STAGE_INIT:
-            # TODO check auth method
-            self._write_to_sock(b'\x05\00', self._local_sock)
-            self._stage = STAGE_ADDR
-            return
+        # elif is_local and self._stage == STAGE_INIT:
+        #     # TODO check auth method
+        #     self._write_to_sock(b'\x05\00', self._local_sock)
+        #     self._stage = STAGE_ADDR
+        #     return
         elif self._stage == STAGE_CONNECTING:
             self._handle_stage_connecting(data)
-        elif (is_local and self._stage == STAGE_ADDR) or \
-                (not is_local and self._stage == STAGE_INIT):
+        elif not is_local and self._stage == STAGE_INIT:
             self._handle_stage_addr(data)
 
     def _on_remote_read(self):
@@ -594,6 +535,7 @@ class TCPRelayHandler(object):
             #测试使用
             if not self.print_peer_first:
                 logging.info('peername  %s:%d'%(sock.getpeername()[0],sock.getpeername()[1]))
+                logging.info('pid:%d'%os.getpid())
                 self.print_peer_first = True
             #self._config['host2dict'][r_dest_host][self._config['host2position'][r_dest_host]]
             ###############################

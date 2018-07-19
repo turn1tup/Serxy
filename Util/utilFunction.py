@@ -1,24 +1,13 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python3
-"""
--------------------------------------------------
-   File Name：     utilFunction.py
-   Description :  tool function
-   Author :       JHao
-   date：          2016/11/25
--------------------------------------------------
-   Change Activity:
-                   2016/11/25: 添加robustCrawl、verifyProxy、getHtmlTree
--------------------------------------------------
-"""
+
 import requests
 import time
 from lxml import etree
 from Global import GLOBAL
-from Util.LogHandler import LogHandler
+import logging
 from Util.WebRequest import WebRequest
 import json
-# logger = LogHandler(__name__, stream=False)
 
 
 # noinspection PyPep8Naming
@@ -34,10 +23,6 @@ def robustCrawl(func):
     return decorate
 
 
-
-
-
-# noinspection PyPep8Naming
 def getHtmlTree(url, **kwargs):
     """
     获取html树
@@ -92,17 +77,15 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     try:
         rsp = requests.get(dst_url, proxies=proxies, timeout=10, verify=False)
         if rsp.status_code == 400:
-            print('[!] 400 : %s' %proxy)
+            logging.warn('[!] 400 : %s' %proxy)
         if rsp.status_code != 200: return False
         represent_addr_list = [i.strip() for i in json.loads(rsp.content.decode()).get('origin').split(',')]
-        #print(represent_addr_list)
         proxy_addr=food['proxy'].split(':')[0]
         food['anonymous'] = not len(represent_addr_list) > 1
         return proxy_addr in represent_addr_list
-        #return False
+
     except Exception as e:
-        # logger.error(str(e))
-        #print(e)
+
         return False
 
 # noinspection PyPep8Naming

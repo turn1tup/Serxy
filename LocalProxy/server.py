@@ -64,37 +64,12 @@ def get_config():
         #config['retrive_time'] = _f('retrive_time', '60*60*1', eval)
         config['host_to_unavaiable_count'] = {}
         return config
-        #retrive_time
-        # config['forbidden_handle_or_not'] = {
-        #     k: (pro_config.get(k).get('forbidden_handle_or_not') or pro_config['Global'].get('forbidden_type') or False) for
-        # k in
-        #     pro_config.keys()}
-        #
-        # config['forbidden_type'] = {
-        #     k: (pro_config.get(k).get('forbidden_type') or pro_config['Global'].get('forbidden_type') or 'status_code') for
-        # k in
-        #     pro_config.keys()}
-        #
-        # config['forbidden_content'] = {
-        #     k: (pro_config.get(k).get('forbidden_content') or pro_config['Global'].get('forbidden_content') or 'not 200')
-        # for k in
-        #     pro_config.keys()}
-        #
-        # config['retrive_time'] = {
-        #     k: eval(pro_config.get(k).get('retrive_time') or pro_config['Global'].get('retrive_time') or '60*60*1') for
-        # k in
-        #     pro_config.keys()}
-
 
     except Exception as e:
         logging.warn('local proxy server get config error : %r'%e)
         return
 def Server():
-    #shell.check_python()
 
-    #config = shell.get_config(False)
-
-    #daemon.daemon_exec(config)
 
     config = get_config()
     if not config:
