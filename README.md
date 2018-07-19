@@ -1,6 +1,7 @@
 # Serxy
 
-python3.4+
+python3.4+ 
+os unix/linux
 
 三方库 `requirement.txt`
 
