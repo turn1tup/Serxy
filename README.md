@@ -8,11 +8,6 @@ python3.4+
 
 数据库` mongodb`
 
-本地代理服务器代码参考 `shadowsocks`
-
-代理地址抓取方面的代码，参考了`https://github.com/jhao104/proxy_pool`
-
-
 
 ### 注意事项：
 
@@ -44,5 +39,11 @@ python3.4+
 实际下来可用性十分底，所以这里考虑自己搭建一个验证代理的界面。
 
 
+### License
+Copyright 2018 trun1tup
 
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 
+`http://www.apache.org/licenses/LICENSE-2.0`
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
