@@ -12,6 +12,7 @@ from Util.utilFunction import proxy_is_avaiable
 from Util.utilFunction import verifyProxyFormat
 from DataAccess.mongodb import MongodbConnector
 import logging
+from base64 import b64encode
 #logging.basicConfig(level=logging.DEBUG,format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 
 
@@ -118,9 +119,8 @@ class ConfirmThread(Thread):
                         logging.warn(e)
                 if food['type'] == 'forbidden':
                     try:
-                        host = food['host']
+                        host = 'host:'+b64encode(food['host'].encode()).decode()
                         proxy = food['proxy']
-                        #
                         self._db_connector.update({'proxy':proxy},{'$set':{host:time()}})
                     except Exception as e:
                         logging.warn(e)
@@ -133,6 +133,15 @@ class ConfirmThread(Thread):
                     except Exception as e:
                         logging.warn(e)
 
+                if food['type'] == 'relive':
+                    try:
+                        proxy = food['proxy']
+                        k = food['k']
+                        v = food['v']
+                        self._db_connector.update({'proxy':proxy},{'$unset':{k:""}})
+                        logging.info('[*] Relive proxy %r'%proxy)
+                    except Exception as e:
+                        logging.warn(e)
             except QueueEmpty:
                 pass
 

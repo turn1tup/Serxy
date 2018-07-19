@@ -334,9 +334,11 @@ class TCPRelayHandler(object):
             max = self._config['proxies_pool_max'].get(r_dest_host) or self._config['proxies_pool_max'].get('Global') or 30
             min = self._config['proxies_pool_min'].get(r_dest_host) or self._config['proxies_pool_min'].get('Global') or 10
             anonymous = self._config['anonymous']
+
             def _p(limit, anonymous=False):
                 return self._config['db_connector'].get_all(
-                    {'score': {'$gt': -1}, 'anonymous': {'$in': [True, anonymous]},self.r_dest_host:{'$exists':False}}, limit=limit)
+                    {'score': {'$gt': -1}, 'anonymous': {'$in': [True, anonymous]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
+
             if not self._config['host2dict'].get(r_dest_host):
                 #在本地代理服务器这进行数据库查询合适吗，有优化方案吗
                 #想过用协程，但是好像搞不了..
@@ -385,7 +387,7 @@ class TCPRelayHandler(object):
             #if self._config['verbose']:
             traceback.print_exc()
             self.destroy()
-###!!!!!!!!
+
     def _create_remote_socket(self, ip, port):
         addrs = socket.getaddrinfo(ip, port, 0, socket.SOCK_STREAM,
                                    socket.SOL_TCP)
@@ -420,16 +422,6 @@ class TCPRelayHandler(object):
                     #else:
                     remote_port = self._remote_address[1]
 
-                    #if self._is_local and self._config['fast_open']:
-                        # for fastopen:
-                        # wait for more data to arrive and send them in one SYN
-                    #   self._stage = STAGE_CONNECTING
-                        # we don't have to wait for remote since it's not
-                        # created
-                    #    self._update_stream(STREAM_UP, WAIT_STATUS_READING)
-                        # TODO when there is already data in this packet
-                    #else:
-                        # else do connect
                     remote_sock = self._create_remote_socket(remote_addr,
                                                              remote_port)
                     try:
@@ -683,7 +675,11 @@ class TCPRelayHandler(object):
                 #     self._data_send and logging.info('[*] send partition data') or logging.info('[*]none data')
                 # if type == 'forbidden':
                 #     self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': 'forbidden', 'proxy': proxy,'host':self.r_dest_host})
-                self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
+                if type == 'forbidden':
+                    self._config['GLOBAL'].PRIORITY_QUEUE_1.put(
+                        {'type': type, 'proxy': proxy, 'host': self.r_dest_host, 'score': -1})
+                else:
+                    self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
                 #.#测试使用
                 if  self._data_send :
                     logging.info('[*] send partition data')

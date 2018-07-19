@@ -14,32 +14,20 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 from __future__ import absolute_import, division, print_function, \
     with_statement
-
 import sys
 import os
 import logging
 import signal
 from Global import GLOBAL
-from copy import copy
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
 from LocalProxy import shell, daemon, eventloop, tcprelay, asyncdns
 from DataAccess.mongodb import MongodbConnector
 from Util.getConfig import GetProConfig
-'''
-import logging
-logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
-        datefmt='%a, %d %b %Y %H:%M:%S'
-        )
-'''
-from Global import GLOBAL
+
+
 def get_config():
-
-
     config = {}
     try:
         pro_config = GetProConfig().get_section2dict()
@@ -55,8 +43,7 @@ def get_config():
                     k: (pro_config.get(k).get(v) or pro_config['Global'].get(v) or default) for
                     k in
                     pro_config.keys()}
-        #from Global import GLOBAL
-        config['GLOBAL'] = GLOBAL#GLOBAL.PRIORITY_QUEUE_1
+        config['GLOBAL'] = GLOBAL
         config['verbose'] = True
         config['server_port'] = int(pro_config['Global']['server_port'])
         config['timeout'] = int(pro_config['Global']['timeout'])
@@ -74,7 +61,7 @@ def get_config():
         config['forbidden_handle_or_not'] = _f('forbidden_handle_or_not',False,None)
         config['forbidden_type'] = _f('forbidden_type','status_code',None)
         config['forbidden_content'] = _f('forbidden_content','not 200',None)
-        config['retrive_time'] = _f('retrive_time', '60*60*1', eval)
+        #config['retrive_time'] = _f('retrive_time', '60*60*1', eval)
         config['host_to_unavaiable_count'] = {}
         return config
         #retrive_time

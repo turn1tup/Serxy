@@ -19,6 +19,8 @@ from time import time
 from threading import Thread
 import logging
 #import asyncio
+from Util.getConfig import GetProConfig
+from base64 import b64decode
 
 def dbProxiesWorkout():
     '''
@@ -31,32 +33,43 @@ def dbProxiesWorkout():
 
 class DBProxiesGetterProcess(object):
     def __init__(self,start_run=True):
-        #while not GLOBAL.GLOBAL_VARIABLE['RUNNING']:
-        #    sleep(5)
         self._mtime = time()
         self._interval = GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].db_proxies_getter_process_interval
         self._db_connector= MongodbConnector()
+
+        pro_config = GetProConfig().get_section2dict()
+        #self._pro_config_keys = pro_config.keys()
+        self._relive_time = {
+        k: eval(pro_config.get(k).get('relive_time') or pro_config['Global'].get('relive_time') or '60*60*1') for k in
+        pro_config.keys()}
+        self._retrlive_host = self._relive_time.keys()
+        logging.info(self._relive_time)
         start_run and self.run()
-
-
     def run(self):
         #延迟启动
-        sleep(120)
+        sleep(30)
+
         t = Thread(target=dbProxiesWorkout)
         t.daemon = True
         t.start()
         while True:
-        #while GLOBAL.GLOBAL_VARIABLE['RUNNING']:
-            # print(GLOBAL.GLOBAL_VARIABLE['DB_PROXIES_WORKOUT'])
             if not GLOBAL.GLOBAL_VARIABLE['DB_PROXIES_WORKOUT']:
                 sleep(10)
                 continue
 
-            #print('test')
-            #print([d for d in GLOBAL.DB_CONNECTOR_OBJECT.get_all({'anonymous':False})])
-            # print('DBProxiesGetterProcess')
-            #
             for dict_ in self._db_connector.get_all({}):
+                for k,v in dict_.items():
+                    # 如果该代理存在被禁止的host，则获取其retrive time 复活时间，如果时间到了则让其复活
+                    if k.startswith('host:') and b64decode(k[5:]).decode() in self._retrlive_host:
+                        #测试使用
+                        #host = b64decode(k[5:])
+                        #logging.info('k:v - %r:%r'%(k,v))
+                        relive_time = self._relive_time[b64decode(k[5:]).decode()]
+                        #logging.info(relive_time)
+                        if time() - v >= relive_time:
+                            GLOBAL.PRIORITY_QUEUE_2.put({'type':'relive','proxy':dict_['proxy'],'k':k,'v':v})
+
+                            logging.info({'type':'relive','proxy':dict_['proxy'],'k':k,'v':v})
                 dict_['from_db']=True
                 GLOBAL.PRIORITY_QUEUE_3.put(dict_)
             GLOBAL.GLOBAL_VARIABLE['DB_PROXIES_WORKOUT'] = False
@@ -68,9 +81,10 @@ class DBProxiesGetterProcess(object):
                 continue
             interval = self._interval - itime
             if interval > 0:
-                logging.info('DBProxiesGetterProcess need sleep times:{}'.format(interval))
-                sleep(interval)
+               logging.info('DBProxiesGetterProcess need sleep times:{}'.format(interval))
+               sleep(interval)
             self._mtime = time()
+
 
 class RowProxiesGetterProcesses(object):
     def __init__(self,start_run=True):
