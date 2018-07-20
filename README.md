@@ -37,13 +37,3 @@ python3.4+
 2）
 验证代理可用性的界面太简单了，数据只有几十个字节，但是我们通常访问的网页数据实际上达到了上万字节，所以表面上可用的代理，
 实际下来可用性十分底，所以这里考虑自己搭建一个验证代理的界面。
-
-
-### License
-Copyright 2018 trun1tup
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-`http://www.apache.org/licenses/LICENSE-2.0`
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
