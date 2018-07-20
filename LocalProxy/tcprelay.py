@@ -130,8 +130,8 @@ class TCPRelayHandler(object):
         self._data_send = False
         #以下变量 仅 测试使用
         self._ps = None
-
         self.print_peer_first = False
+
     def __hash__(self):
         # default __hash__ is id / 16
         # we want to eliminate collisions
@@ -140,16 +140,6 @@ class TCPRelayHandler(object):
     @property
     def remote_address(self):
         return self._remote_address
-
-    def _get_a_server(self):
-        server = self._config['server']
-        server_port = self._config['server_port']
-        if type(server_port) == list:
-            server_port = random.choice(server_port)
-        if type(server) == list:
-            server = random.choice(server)
-        logging.debug('chosen server: %s:%d', server, server_port)
-        return server, server_port
 
     def _update_activity(self, data_len=0):
         # tell the TCP Relay we have activities recently
@@ -198,7 +188,6 @@ class TCPRelayHandler(object):
         try:
             l = len(data)
             s = sock.send(data)
-            #print('s:{0} ----- l:{1}'.format(s,l))
             if s < l:
                 data = data[s:]
                 uncomplete = True
@@ -261,7 +250,6 @@ class TCPRelayHandler(object):
 #                [self._config['host2position'][r_dest_host]] \
 #                    ['proxy'].split(':')
 
-
     def _handle_stage_addr(self, data):
         try:
             dest_host = parse_header(data)
@@ -298,12 +286,8 @@ class TCPRelayHandler(object):
                 #在本地代理服务器这进行数据库查询合适吗，有优化方案吗
                 #想过用协程，但是好像搞不了..
                 proxies = _p(max,anonymous)
-
                 #测试使用
-                logging.info(proxies)
-                    #proxies = self._config['db_connector'].get_all({'score': {'$lt': 0}},
-                    #                                               limit=5)
-
+                #logging.info(proxies)
                 self._config['host2dict'][r_dest_host] = proxies
                 self._config['host2position'][r_dest_host] = 0
 
@@ -316,8 +300,14 @@ class TCPRelayHandler(object):
                 diff = max - pool_length
                 self._config['host2dict'][r_dest_host].extend(_p(diff,anonymous))
 
+            pool_length = len(self._config['host2dict'][r_dest_host])
             #测试使用
-            logging.info('[+]host:%s pool length:%d'%(r_dest_host,len(self._config['host2dict'][r_dest_host])))
+            logging.info('[+]host:%s pool length:%d'%(r_dest_host,pool_length))
+
+            if(pool_length)<1:
+                logging.warn('[!] no proxy is avaiable!!!')
+                self.destroy()
+                return
 
             remote_addr, remote_port = self._config['host2dict'][r_dest_host] \
                 [self._config['host2position'][r_dest_host]] \
@@ -431,7 +421,6 @@ class TCPRelayHandler(object):
 
     def _on_remote_read(self):
         # handle all remote read events
-        #logging.info('_on_remote_read')
         data = None
         try:
             data = self._remote_sock.recv(BUF_SIZE)
@@ -450,9 +439,6 @@ class TCPRelayHandler(object):
                 self.r_dest_host))
             self.destroy(type='forbidden')
             return
-            # logging.info('Forbidden event -- proxy:{0}-- website:{1}'.format( self._config['host2dict'][self.r_dest_host][self._config['host2position'][self.r_dest_host]] ,self.r_dest_host))
-            # self.destroy()
-
 
         self._update_activity(len(data))
         try:
@@ -465,39 +451,14 @@ class TCPRelayHandler(object):
             # TODO use logging when debug completed
             self.destroy()
 
-        # data = None
-        # try:
-        #     data = self._remote_sock.recv(BUF_SIZE)
-        #
-        # except (OSError, IOError) as e:
-        #     if eventloop.errno_from_exception(e) in \
-        #             (errno.ETIMEDOUT, errno.EAGAIN, errno.EWOULDBLOCK):
-        #         return 'remote_sock_error'
-        # if not data:
-        #     self.destroy()
-        #     return 'no_data'
-        # self._update_activity(len(data))
-        # return data
-        # try:
-        #     self._write_to_sock(data, self._local_sock)
-        # except Exception as e:
-        #     import traceback
-        #     traceback.print_exc()
-        #     shell.print_exception(e)
-        #     if self._config['verbose']:
-        #         traceback.print_exc()
-        #     # TODO use logging when debug completed
-        #     self.destroy()
-
     def _on_local_write(self):
         # handle local writable event
         #self._data_send = True
-        logging.info('on local write')
+        #logging.info('on local write')
         if self._data_to_write_to_local:
             data = b''.join(self._data_to_write_to_local)
             self._data_to_write_to_local = []
             self._write_to_sock(data, self._local_sock)
-
         else:
             self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)
 
@@ -522,7 +483,7 @@ class TCPRelayHandler(object):
         logging.debug('got remote error')
         if self._remote_sock:
             logging.error(eventloop.get_sock_error(self._remote_sock))
-        self.destroy()
+        self.destroy(type='connection_reset')
 
     def handle_event(self, sock, event):
         # handle all events in this handler and dispatch them to methods
@@ -537,10 +498,7 @@ class TCPRelayHandler(object):
                 logging.info('peername  %s:%d'%(sock.getpeername()[0],sock.getpeername()[1]))
                 logging.info('pid:%d'%os.getpid())
                 self.print_peer_first = True
-            #self._config['host2dict'][r_dest_host][self._config['host2position'][r_dest_host]]
-            ###############################
             if event & eventloop.POLL_ERR:
-                #print('tcprelay remote sock error ####')
                 self._on_remote_error()
                 if self._stage == STAGE_DESTROYED:
                     return
@@ -548,31 +506,6 @@ class TCPRelayHandler(object):
                 self._on_remote_read()
                 if self._stage == STAGE_DESTROYED:
                     return
-
-                '''
-                write_data = self._on_remote_read()
-                ##check if this proxy has been forbidden by the destination website
-                if common.forbidden_or_not(self._config,self.r_dest_host,write_data)[0]:
-                   logging.info('Forbidden event -- proxy:{0}-- website:{1}'.format(
-                        self._remote_sock.getpeername(),
-                        self.r_dest_host))
-                   self._remove_proxy()
-                    #logging.info('Forbidden event -- proxy:{0}-- website:{1}'.format( self._config['host2dict'][self.r_dest_host][self._config['host2position'][self.r_dest_host]] ,self.r_dest_host))
-                    #self.destroy()
-                if write_data != 'remote_sock_error' or write_data != 'nod_data':
-                    try:
-                        self._write_to_sock(write_data, self._local_sock)
-                    except Exception as e:
-                        import traceback
-                        traceback.print_exc()
-                        shell.print_exception(e)
-                        if self._config['verbose']:
-                            traceback.print_exc()
-                        # TODO use logging when debug completed
-                        self.destroy()
-                    if self._stage == STAGE_DESTROYED:
-                        return
-                '''
             if event & eventloop.POLL_OUT:
                 self._on_remote_write()
         elif sock == self._local_sock:
@@ -585,7 +518,6 @@ class TCPRelayHandler(object):
                 if self._stage == STAGE_DESTROYED:
                     return
             if event & eventloop.POLL_OUT:
-                print('----------------')
                 self._on_local_write()
         else:
             logging.warn('unknown socket')
@@ -596,12 +528,6 @@ class TCPRelayHandler(object):
 
     def destroy(self,type=None):
         # destroy the handler and release any resources
-        # promises:
-        # 1. destroy won't make another destroy() call inside
-        # 2. destroy releases resources so it prevents future call to destroy
-        # 3. destroy won't raise any exceptions
-        # if any of the promises are broken, it indicates a bug has been
-        # introduced! mostly likely memory leaks, etc
         if self._stage == STAGE_DESTROYED:
             # this couldn't happen
             logging.debug('already destroyed')
@@ -611,16 +537,11 @@ class TCPRelayHandler(object):
         if type:
             try:
                 proxy = self._remove_proxy()
-                # if type == 'timeout':
-                #     # 测试使用
-                #     self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': 'set_score', 'proxy': proxy})
-                #     self._data_send and logging.info('[*] send partition data') or logging.info('[*]none data')
-                # if type == 'forbidden':
-                #     self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': 'forbidden', 'proxy': proxy,'host':self.r_dest_host})
                 if type == 'forbidden':
                     self._config['GLOBAL'].PRIORITY_QUEUE_1.put(
                         {'type': type, 'proxy': proxy, 'host': self.r_dest_host, 'score': -1})
                 else:
+                    #connection_reset / timeout
                     self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
                 #.#测试使用
                 if  self._data_send :
@@ -684,12 +605,6 @@ class TCPRelay(object):
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind(sa)
         server_socket.setblocking(False)
-        # if config['fast_open']:
-        #     try:
-        #         server_socket.setsockopt(socket.SOL_TCP, 23, 5)
-        #     except socket.error:
-        #         logging.error('warning: fast open is not available')
-        #         self._config['fast_open'] = False
         server_socket.listen(1024)
         self._server_socket = server_socket
         self._stat_callback = stat_callback
@@ -744,16 +659,11 @@ class TCPRelay(object):
                     if now - handler.last_activity < self._timeout:
                         break
                     else:
-                        ###################
-                        #超时有两种情况
-                        #1.没有接收到任何数据就超时了
-                        #2.接收到部分数据，但之后超时了
                         if handler.remote_address:
                             logging.warn('timed out: %s:%d' %
                                          handler.remote_address)
                         else:
                             logging.warn('timed out')
-                        ###########################
                         handler.destroy(type='timeout')
                         self._timeouts[pos] = None  # free memory
                         pos += 1

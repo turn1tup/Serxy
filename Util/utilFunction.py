@@ -4,24 +4,10 @@
 import requests
 import time
 from lxml import etree
-from Global import GLOBAL
 import logging
 from Util.WebRequest import WebRequest
 import json
-
-
-# noinspection PyPep8Naming
-def robustCrawl(func):
-    def decorate(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            pass
-            # logger.info(u"sorry, 抓取出错。错误原因:")
-            # logger.info(e)
-
-    return decorate
-
+import re
 
 def getHtmlTree(url, **kwargs):
     """
@@ -49,20 +35,6 @@ def getHtmlTree(url, **kwargs):
     return etree.HTML(html)
 
 
-def tcpConnect(proxy):
-    """
-    TCP 三次握手
-    :param proxy:
-    :return:
-    """
-    from socket import socket, AF_INET, SOCK_STREAM
-    s = socket(AF_INET, SOCK_STREAM)
-    ip, port = proxy.split(':')
-    result = s.connect_ex((ip, int(port)))
-    return True if result == 0 else False
-
-
-# noinspection PyPep8Naming
 def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     """
     检验代理是否可用
@@ -76,26 +48,22 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     proxies = {"http": "http://{0}".format(proxy)}
     try:
         rsp = requests.get(dst_url, proxies=proxies, timeout=10, verify=False)
-        if rsp.status_code == 400:
-            logging.warn('[!] 400 : %s' %proxy)
+        #if rsp.status_code == 400:
+        #    logging.warn('[!] 400 : %s' %proxy)
         if rsp.status_code != 200: return False
         represent_addr_list = [i.strip() for i in json.loads(rsp.content.decode()).get('origin').split(',')]
         proxy_addr=food['proxy'].split(':')[0]
         food['anonymous'] = not len(represent_addr_list) > 1
         return proxy_addr in represent_addr_list
-
     except Exception as e:
-
         return False
 
-# noinspection PyPep8Naming
 def verifyProxyFormat(proxy):
     """
     检查代理格式
     :param proxy:
     :return:
     """
-    import re
     verify_regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}"
     _proxy = re.findall(verify_regex, proxy)
-    return len(_proxy)==1 and _proxy[0]==proxy
+    return len(_proxy) == 1 and _proxy[0] == proxy

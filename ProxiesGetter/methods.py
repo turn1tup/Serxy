@@ -1,21 +1,11 @@
-#/user/bin/python3
-#-*-encoding:utf-8-*-
-import re
 import sys
-try:
-    from importlib import reload
-except:
-    reload(sys)
 sys.path.append('..')
 from Util.utilFunction import getHtmlTree
 from Global import GLOBAL
 from time import sleep
-#import asyncio
 import logging
-'''
-put result to GLOBAL.PRIORITY_QUEUE_2
-{'proxy':''}
-'''
+
+
 class Methods(object):
     def __init__(self):
         pass

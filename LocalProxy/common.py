@@ -171,15 +171,6 @@ def parse_header(data):
         return (to_str(dest_addr),int(dest_port),data)
     return None
 
-def after_remote_sock_timeout(config,host,data):
-    '''
-    删除self中的该sock对象，通知queue_1
-    :param config:
-    :param host:
-    :param data:
-    :return:
-    '''
-    pass
 
 
 def get_status_code(data):
@@ -225,27 +216,7 @@ def forbidden_or_not(config,host,data):
     else:
         pass
     return None,None
-    #if data=='remote_sock_error' or data=='no_data':
-     #   #remote socks unavaiable
-     #   pass
 
-    #if status_code == 500 and type=='sock' and (not config['host_to_unavaiable_count'].get(host) or config['host_to_unavaiable_count'][host]<2):
-        #
-    #    pass
-        # if type=='sock' and (not config['host_to_unavaiable_count'].get(host) or config['host_to_unavaiable_count'][host]<2):
-        #     return True,'sock'
-        # else:
-        #     if not config['host_to_unavaiable_count'].get(host):
-        #         config['host_to_unavaiable_count'][host] = 1
-        #     else:
-        #         config['host_to_unavaiable_count'][host] += 1
-        #     return False,'sock'
-
-    # if type == 'status_code':
-    #     pass
-    # elif type == 'str':
-    #     return to_bytes(content) in data , 'str'
-    # return False ,'finally'
 
 class IPNetwork(object):
     ADDRLENGTH = {socket.AF_INET: 32, socket.AF_INET6: 128, False: 0}
@@ -300,124 +271,3 @@ class IPNetwork(object):
                            self._network_list_v6))
         else:
             return False
-
-if __name__ == '__main__':
-    str= b'''HTTP/1.1 304 Not Modified
-Cache-Control: max-age=0, must-revalidate
-Date: Tue, 17 Jul 2018 03:24:36 GMT
-Etag: e16fcb8788a3c78955136c71e9dddd7c
-Server: apache
-Connection: close
-
-'''
-    print(get_status_code(str))
-
-'''
-def parse_header(data):
-    #addrtype = ord(data[0])
-    addrtype =ADDRTYPE_IPV4
-    dest_addr = None
-    dest_port = None
-    header_length = 0
-    print(data)
-    if addrtype == ADDRTYPE_IPV4:
-        if len(data) >= 7:
-            dest_addr = socket.inet_ntoa(data[1:5])
-            dest_port = struct.unpack('>H', data[5:7])[0]
-            header_length = 7
-        else:
-            logging.warn('header is too short')
-    elif addrtype == ADDRTYPE_HOST:
-        if len(data) > 2:
-            addrlen = ord(data[1])
-            if len(data) >= 2 + addrlen:
-                dest_addr = data[2:2 + addrlen]
-                dest_port = struct.unpack('>H', data[2 + addrlen:4 +
-                                                     addrlen])[0]
-                header_length = 4 + addrlen
-            else:
-                logging.warn('header is too short')
-        else:
-            logging.warn('header is too short')
-    elif addrtype == ADDRTYPE_IPV6:
-        if len(data) >= 19:
-            dest_addr = socket.inet_ntop(socket.AF_INET6, data[1:17])
-            dest_port = struct.unpack('>H', data[17:19])[0]
-            header_length = 19
-        else:
-            logging.warn('header is too short')
-    else:
-        logging.warn('unsupported addrtype %d, maybe wrong password or '
-                     'encryption method' % addrtype)
-    if dest_addr is None:
-        return None
-    return addrtype, to_bytes(dest_addr), dest_port, header_length
-
-
-def pack_addr(address):
-    address_str = to_str(address)
-    for family in (socket.AF_INET, socket.AF_INET6):
-        try:
-            r = socket.inet_pton(family, address_str)
-            if family == socket.AF_INET6:
-                return b'\x04' + r
-            else:
-                return b'\x01' + r
-        except (TypeError, ValueError, OSError, IOError):
-            pass
-    if len(address) > 255:
-        address = address[:255]  # TODO
-    return b'\x03' + chr(len(address)) + address
-    
-
-
-
-
-
-def test_inet_conv():
-    ipv4 = b'8.8.4.4'
-    b = inet_pton(socket.AF_INET, ipv4)
-    assert inet_ntop(socket.AF_INET, b) == ipv4
-    ipv6 = b'2404:6800:4005:805::1011'
-    b = inet_pton(socket.AF_INET6, ipv6)
-    assert inet_ntop(socket.AF_INET6, b) == ipv6
-
-
-def test_parse_header():
-    assert parse_header(b'\x03\x0ewww.google.com\x00\x50') == \
-        (3, b'www.google.com', 80, 18)
-    assert parse_header(b'\x01\x08\x08\x08\x08\x00\x35') == \
-        (1, b'8.8.8.8', 53, 7)
-    assert parse_header((b'\x04$\x04h\x00@\x05\x08\x05\x00\x00\x00\x00\x00'
-                         b'\x00\x10\x11\x00\x50')) == \
-        (4, b'2404:6800:4005:805::1011', 80, 19)
-
-
-def test_pack_header():
-    assert pack_addr(b'8.8.8.8') == b'\x01\x08\x08\x08\x08'
-    assert pack_addr(b'2404:6800:4005:805::1011') == \
-        b'\x04$\x04h\x00@\x05\x08\x05\x00\x00\x00\x00\x00\x00\x10\x11'
-    assert pack_addr(b'www.google.com') == b'\x03\x0ewww.google.com'
-
-
-def test_ip_network():
-    ip_network = IPNetwork('127.0.0.0/24,::ff:1/112,::1,192.168.1.1,192.0.2.0')
-    assert '127.0.0.1' in ip_network
-    assert '127.0.1.1' not in ip_network
-    assert ':ff:ffff' in ip_network
-    assert '::ffff:1' not in ip_network
-    assert '::1' in ip_network
-    assert '::2' not in ip_network
-    assert '192.168.1.1' in ip_network
-    assert '192.168.1.2' not in ip_network
-    assert '192.0.2.1' in ip_network
-    assert '192.0.3.1' in ip_network  # 192.0.2.0 is treated as 192.0.2.0/23
-    assert 'www.google.com' not in ip_network
-
-
-if __name__ == '__main__':
-    test_inet_conv()
-    test_parse_header()
-    test_pack_header()
-    test_ip_network()
-'''

@@ -114,7 +114,7 @@ class ConfirmThread(Thread):
                         score = int(food['score'])
                         self._db_connector.update({'proxy': food['proxy']}, {'$set': {'score': score}})
                         #测试使用
-                        logging.info('set score successfully')
+                        logging.info('set score successfully:%r'% food['proxy'])
                     except Exception as e:
                         logging.warn(e)
                 if food['type'] == 'forbidden':

@@ -22,7 +22,7 @@ import logging
 import signal
 from Global import GLOBAL
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
-from LocalProxy import shell, daemon, eventloop, tcprelay, asyncdns
+from LocalProxy import shell, eventloop, tcprelay, asyncdns
 from DataAccess.mongodb import MongodbConnector
 from Util.getConfig import GetProConfig
 
@@ -99,7 +99,7 @@ def Server():
             dns_resolver.add_to_loop(loop)
             list(map(lambda s: s.add_to_loop(loop), tcp_servers ))
 
-            daemon.set_user(config.get('user', None))
+            #daemon.set_user(config.get('user', None))
             loop.run()
         except Exception as e:
             shell.print_exception(e)
