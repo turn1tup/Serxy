@@ -8,7 +8,21 @@ python3.4+
 
 数据库` mongodb`
 
+### 说明
 
+#### 添加爬虫方法
+
+如果需要添加新的方法，定时到网站去爬取代理，操作如下：在ProxiesGetter/methods.py的class Methods 中添加一个方法，并声明`staticmethod ` ,方法名以 *method* 关键字开头，爬取的结果需要是 *addresss:port* 即 *192.168.1.1:8080* 这种格式的，然后将其放入 *GLOBAL.PRIORITY_QUEUE_2* 队列中即可。 
+
+#### ServerConfig.ini
+
+*DBProxiesGetterProcessInterval* 程序会定期对数据库中的代理进行可用性验证，这里设置该间隔的时间，单位秒
+
+RowProxiesGetterProcessesInterval 程序会定期执行*Methods* 类中的以 *method* 开头的静态方法，该指令设置间隔时间
+
+#### ProConfig.ini
+
+配置文件有全局配置和指定配置，如何某个目标站点，没有设置特定的配置，默认使用全局配置
 
 ### 注意事项：
 
