@@ -168,7 +168,7 @@ class ConfirmThread(Thread):
                     try:
                         logging.debug(food['server'])
                         with self._file_lock:
-                            self._record_file.write('%s\r\n' % food['server'])
+                            self._record_file.write('%s\r\n' % food['server'].strip())
                             self._record_file.flush()
                     except Exception as e:
                         logging.warn(e)
