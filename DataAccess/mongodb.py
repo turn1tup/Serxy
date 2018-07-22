@@ -10,7 +10,7 @@ class MongodbConnector(object):
         self.connector = MongoClient(GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].db_address,GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].db_port,connect=False)
         self.database = self.connector[self.dbname]
         self.collection = GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].collection
-
+        self
     #def collection(self,collection):
     #    self.collection=collection
     def remove(self, find_dict ,collection=None ):

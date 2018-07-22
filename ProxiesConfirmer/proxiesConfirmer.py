@@ -9,12 +9,14 @@ from multiprocessing import Process
 from time import sleep
 from time import time
 from Util.utilFunction import proxy_is_avaiable_https
+from Util.utilFunction import record_proxy_server
 from Util.utilFunction import verify_proxy_format
 from DataAccess.mongodb import MongodbConnector
 import logging
 from base64 import b64encode
+import multiprocessing #import Lock
 #logging.basicConfig(level=logging.DEBUG,format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
-
+import os
 
 class ConfirmerProcesses(object):
     '''
@@ -25,7 +27,21 @@ class ConfirmerProcesses(object):
     在保证优先级的前提下，又保证了不出现某一队列事务长期得不到处理的情况
     '''
     def __init__(self,start_run=True):
+        self._record_server = GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].record_server
         self._db_connector = MongodbConnector()
+        self._set_lock = multiprocessing.Lock()
+        self._record_set = set()
+        pwd = os.path.split(os.path.realpath(__file__))[0]
+        file_path = os.path.join(os.path.join(os.path.split(pwd)[0], 'ProxiesConfirmer'), 'record_server.txt')
+        try:
+            with open(file_path) as f:
+                for l in f:
+                    self._record_file.add(l.strip())
+        except:
+            pass
+        self._record_file = open(file_path,'a')
+        self._file_lock = multiprocessing.Lock()
+
         start_run and self.run()
 
     def run(self):
@@ -36,13 +52,13 @@ class ConfirmerProcesses(object):
         level_3_num = int(GLOBAL.GLOBAL_VARIABLE['CONFIRMER_THREADS_NUM'] - level_1_num - level_2_num)
         for i in range(level_1_num):
             #threads.append(Thread(target=confirm,args=(list_1,i)))
-            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,0 ,i+1))
+            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,0 ,i+1,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for i in range(level_2_num):
             #threads.append(Thread(target=confirm,args=(list_2,i*10)))
-            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,1 ,(i+1)*10))
+            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,1 ,(i+1)*10,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for i in range(level_3_num):
             #threads.append(Thread(target=confirm,args=(list_3,i*100)))
-            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,2 ,(i+1)*100))
+            threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,2 ,(i+1)*100,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for t in threads:
             t.daemon = 1
             t.start()
@@ -61,9 +77,14 @@ def remove_proxy():
 
 
 class ConfirmThread(Thread):
-    def __init__(self ,list_ ,offset ,mark):
+    def __init__(self ,list_ ,offset ,mark ,set_lock ,record_set,file_lock,record_file,record_server):
         Thread.__init__(self)
         self._db_connector = MongodbConnector()
+        self._record_server = record_server
+        self._set_lock = set_lock
+        self._record_set = record_set
+        self._file_lock = file_lock
+        self._record_file = record_file
         self.ring_shift_left(list_, offset)
         self.confirm_queue_list = list_
         #self.offset = offset
@@ -104,6 +125,7 @@ class ConfirmThread(Thread):
                             self._db_connector.update({'proxy': food['proxy']},{'$inc': {'score':-1}})
                         continue
                     else:
+                        self._record_server and record_proxy_server(food, self._set_lock, self._record_set, timeout=20)
                         food['score']=0
                         self._db_connector.put({'proxy': food['proxy']}, food)
 
@@ -140,6 +162,14 @@ class ConfirmThread(Thread):
                         v = food['v']
                         self._db_connector.update({'proxy':proxy},{'$unset':{k:""}})
                         logging.info('[*] Relive proxy %r'%proxy)
+                    except Exception as e:
+                        logging.warn(e)
+                if food['type'] == 'record_server':
+                    try:
+                        logging.debug(food['server'])
+                        with self._file_lock:
+                            self._record_file.write('%s\r\n' % food['server'])
+                            self._record_file.flush()
                     except Exception as e:
                         logging.warn(e)
             except QueueEmpty:

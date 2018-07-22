@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="1579a458-0af5-43db-8b7c-b023b1e48af6" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Configuration/ServerConfig.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Configuration/ServerConfig.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DataAccess/mongodb.py" beforeDir="false" afterPath="$PROJECT_DIR$/DataAccess/mongodb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Util/getConfig.py" beforeDir="false" afterPath="$PROJECT_DIR$/Util/getConfig.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Util/utilClass.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Util/utilFunction.py" beforeDir="false" afterPath="$PROJECT_DIR$/Util/utilFunction.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -25,17 +29,17 @@
       <file leaf-file-name="methods.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ProxiesGetter/methods.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
-              <caret line="36" column="47" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="47" />
+            <state relative-caret-position="385">
+              <caret line="47" column="11" lean-forward="true" selection-start-line="47" selection-start-column="11" selection-end-line="47" selection-end-column="11" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="proxiesConfirmer.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="proxiesConfirmer.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="369">
-              <caret line="96" column="52" selection-start-line="96" selection-start-column="52" selection-end-line="96" selection-end-column="52" />
+            <state relative-caret-position="352">
+              <caret line="127" column="48" selection-start-line="127" selection-start-column="48" selection-end-line="127" selection-end-column="48" />
               <folding>
                 <element signature="e#20#45#0" expanded="true" />
               </folding>
@@ -43,14 +47,66 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilFunction.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="utilFunction.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Util/utilFunction.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="423">
-              <caret line="96" column="21" selection-start-line="96" selection-start-column="21" selection-end-line="96" selection-end-column="21" />
+              <caret line="86" column="28" lean-forward="true" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
               <folding>
-                <element signature="e#49#64#0" expanded="true" />
+                <element signature="e#48#61#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="GLOBAL.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Global/GLOBAL.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="95">
+              <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="26" />
+              <folding>
+                <element signature="e#0#35#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mongodb.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/DataAccess/mongodb.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="152">
+              <caret line="8" column="62" lean-forward="true" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="62" />
+              <folding>
+                <element signature="e#23#54#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="proxiesGetter.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ProxiesGetter/proxiesGetter.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1140" />
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="getConfig.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Util/getConfig.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="418">
+              <caret line="43" column="21" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="21" />
+              <folding>
+                <element signature="e#0#9#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ServerConfig.ini" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Configuration/ServerConfig.ini">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="17" column="12" selection-start-line="17" selection-end-line="17" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -68,16 +124,23 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py" />
+        <option value="$PROJECT_DIR$/DataAccess/mongodb.py" />
+        <option value="$PROJECT_DIR$/ProxiesGetter/methods.py" />
+        <option value="$PROJECT_DIR$/Configuration/ServerConfig.ini" />
         <option value="$PROJECT_DIR$/Util/utilFunction.py" />
+        <option value="$PROJECT_DIR$/Util/getConfig.py" />
+        <option value="$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="504" />
     <option name="y" value="231" />
     <option name="width" value="676" />
     <option name="height" value="728" />
+  </component>
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
@@ -94,12 +157,32 @@
             <path>
               <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
               <item name="Serxy" type="462c0819:PsiDirectoryNode" />
+              <item name="Configuration" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Serxy" type="462c0819:PsiDirectoryNode" />
+              <item name="DataAccess" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Serxy" type="462c0819:PsiDirectoryNode" />
+              <item name="Global" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Serxy" type="462c0819:PsiDirectoryNode" />
               <item name="ProxiesConfirmer" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
               <item name="Serxy" type="462c0819:PsiDirectoryNode" />
               <item name="ProxiesGetter" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Serxy" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Serxy" type="462c0819:PsiDirectoryNode" />
+              <item name="Util" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -137,12 +220,13 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="784" extended-state="7" />
+    <frame x="-8" y="-8" width="1382" height="784" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.24963397" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18960468" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Python Console" />
@@ -150,7 +234,6 @@
       <window_info anchor="bottom" id="Terminal" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info id="Favorites" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -170,7 +253,7 @@
           <line>1</line>
         </line-breakpoint>
       </breakpoints>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -179,29 +262,81 @@
         <state relative-caret-position="-228" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ProxiesGetter/methods.py">
+    <entry file="file://$PROJECT_DIR$/ProxiesConfirmer/record_server.txt">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Util/utilClass.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="36" column="47" selection-start-line="36" selection-start-column="31" selection-end-line="36" selection-end-column="47" />
+        <state relative-caret-position="304">
+          <caret line="16" column="18" selection-start-line="16" selection-start-column="6" selection-end-line="16" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py">
+    <entry file="file://$PROJECT_DIR$/ProxiesGetter/methods.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="369">
-          <caret line="96" column="52" selection-start-line="96" selection-start-column="52" selection-end-line="96" selection-end-column="52" />
-          <folding>
-            <element signature="e#20#45#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="385">
+          <caret line="47" column="11" lean-forward="true" selection-start-line="47" selection-start-column="11" selection-end-line="47" selection-end-column="11" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Util/utilFunction.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="423">
-          <caret line="96" column="21" selection-start-line="96" selection-start-column="21" selection-end-line="96" selection-end-column="21" />
+          <caret line="86" column="28" lean-forward="true" selection-start-line="86" selection-start-column="28" selection-end-line="86" selection-end-column="28" />
           <folding>
-            <element signature="e#49#64#0" expanded="true" />
+            <element signature="e#48#61#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Global/GLOBAL.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" column="25" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ProxiesGetter/proxiesGetter.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1140" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Configuration/ServerConfig.ini">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="17" column="12" selection-start-line="17" selection-end-line="17" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Util/getConfig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="418">
+          <caret line="43" column="21" selection-start-line="43" selection-start-column="8" selection-end-line="43" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/DataAccess/mongodb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="8" column="62" lean-forward="true" selection-start-line="8" selection-start-column="23" selection-end-line="8" selection-end-column="62" />
+          <folding>
+            <element signature="e#23#54#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ProxiesConfirmer/proxiesConfirmer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="127" column="48" selection-start-line="127" selection-start-column="48" selection-end-line="127" selection-end-column="48" />
+          <folding>
+            <element signature="e#20#45#0" expanded="true" />
           </folding>
         </state>
       </provider>

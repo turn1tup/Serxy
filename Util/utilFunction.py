@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # !/usr/bin/env python3
-
+import socket
 import requests
 import time
 from lxml import etree
@@ -8,6 +8,8 @@ import logging
 from Util.WebRequest import WebRequest
 import json
 import re
+from Global import GLOBAL
+
 
 def getHtmlTree(url, **kwargs):
     """
@@ -68,16 +70,52 @@ def verify_proxy_format(proxy):
     _proxy = re.findall(verify_regex, proxy)
     return len(_proxy) == 1 and _proxy[0] == proxy
 
-'''
-HTTP/1.1 200 Connection established
 
-'''
-import socket
+def record_proxy_server(food, set_lock, record_set, timeout = 20):
+    try:
+        proxy = food['proxy']
+        #logging.info(proxy)
+        socket.setdefaulttimeout(timeout)
+        if type(proxy) == bytes:
+            proxy = proxy.decode('utf-8')
+        address, port = proxy.split(':')
+        port = int(port)
+        send_data = 'GET $ HTTP/1.1\r\nHost: $\r\n\r\n'
+        send_data = send_data.encode()
+        conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        conn.connect((address, port))
+        conn.send(send_data)
+        recv_data = b''
+        buffer = conn.recv(1024)
+        recv_data += buffer
+        socket.setdefaulttimeout(5)
+        while len(recv_data) ==1024:
+            try:
+                buffer = conn.recv(1024)
+            except:
+                break
+            recv_data += buffer
+        recv_data = recv_data.decode()
+        for line in recv_data.split('\r\n\r\n')[0].split('\r\n'):
+            if line.startswith('Server: '):
+                server = line[8:]
+                with set_lock:
+                   if server not in record_set:
+                       record_set.add(server)
+                       GLOBAL.PRIORITY_QUEUE_2.put({'type':'record_server','server':server})
+    except Exception as e:
+        logging.debug(e)
+
 def proxy_is_avaiable_https(food,timeout = 20):
+    '''
+    仅获取能访问HTTPS的代理
+    :param food:
+    :param timeout:
+    :return:
+    '''
     try:
         proxy = food['proxy']
         socket.setdefaulttimeout(timeout)
-        #proxy = food['proxy']
         if type(proxy) == bytes:
             proxy = proxy.decode('utf-8')
         address, port = proxy.split(':')
@@ -87,7 +125,6 @@ def proxy_is_avaiable_https(food,timeout = 20):
         conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         conn.connect((address, port))
         conn.send(send_data)
-       # recv_data = b''
         recv_data = conn.recv(1024)
         recv_data = recv_data.decode()
         resp_line = recv_data.split('\r\n\r\n')[0].split('\r\n')[0]
@@ -96,5 +133,6 @@ def proxy_is_avaiable_https(food,timeout = 20):
     except Exception as e:
         logging.debug(e)
         return False
+    return False
 if __name__ == '__main__':
     proxy_is_avaiable_https('118.190.95.43:9001')

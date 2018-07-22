@@ -40,6 +40,10 @@ class GetServerConfig(object):
     def row_proxies_getter_process_interval(self):
         return eval(self.config_file.get('ProxiesGetter','RowProxiesGetterProcessesInterval'))
 
+    @property
+    def record_server(self):
+        return eval(self.config_file.get('ProxiesGetter','RecordServer'))
+
 
 class GetProConfig():
     def __init__(self):
