@@ -8,8 +8,8 @@ from threading import Thread
 from multiprocessing import Process
 from time import sleep
 from time import time
-from Util.utilFunction import proxy_is_avaiable
-from Util.utilFunction import verifyProxyFormat
+from Util.utilFunction import proxy_is_avaiable_https
+from Util.utilFunction import verify_proxy_format
 from DataAccess.mongodb import MongodbConnector
 import logging
 from base64 import b64encode
@@ -91,7 +91,7 @@ class ConfirmThread(Thread):
                     logging.warn('bad food:%r'%food)
                     continue
                 if food['type'] == 'confirm':
-                    if not verifyProxyFormat(food['proxy']):
+                    if not verify_proxy_format(food['proxy']):
                         continue
 
                     #if not validUsefulProxy(food) :
@@ -99,7 +99,7 @@ class ConfirmThread(Thread):
                     #如果代理不可用而且
                     #该代理数据是从数据库查询出来的就需要对其下降评分
                     #其实置为-1 也可以，下降分数对本项目没啥用..
-                    if not proxy_is_avaiable(food) :
+                    if not proxy_is_avaiable_https(food) :
                         if food.get('from_db'):
                             self._db_connector.update({'proxy': food['proxy']},{'$inc': {'score':-1}})
                         continue

@@ -58,7 +58,7 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     except Exception as e:
         return False
 
-def verifyProxyFormat(proxy):
+def verify_proxy_format(proxy):
     """
     检查代理格式
     :param proxy:
@@ -67,3 +67,34 @@ def verifyProxyFormat(proxy):
     verify_regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}"
     _proxy = re.findall(verify_regex, proxy)
     return len(_proxy) == 1 and _proxy[0] == proxy
+
+'''
+HTTP/1.1 200 Connection established
+
+'''
+import socket
+def proxy_is_avaiable_https(food,timeout = 20):
+    try:
+        proxy = food['proxy']
+        socket.setdefaulttimeout(timeout)
+        #proxy = food['proxy']
+        if type(proxy) == bytes:
+            proxy = proxy.decode('utf-8')
+        address, port = proxy.split(':')
+        port = int(port)
+        send_data = 'CONNECT www.baidu.com:443 HTTP/1.1\r\nHost: www.baidu.com:443\r\n\r\n'
+        send_data = send_data.encode()
+        conn = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        conn.connect((address, port))
+        conn.send(send_data)
+       # recv_data = b''
+        recv_data = conn.recv(1024)
+        recv_data = recv_data.decode()
+        resp_line = recv_data.split('\r\n\r\n')[0].split('\r\n')[0]
+        if 'Connection established' in resp_line:
+            return True
+    except Exception as e:
+        logging.debug(e)
+        return False
+if __name__ == '__main__':
+    proxy_is_avaiable_https('118.190.95.43:9001')
