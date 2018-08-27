@@ -1,20 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-#
-# Copyright 2014-2015 clowwindy
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
 from __future__ import absolute_import, division, print_function, \
     with_statement
 
@@ -432,50 +415,3 @@ class DNSResolver(object):
             self._sock = None
 
 
-def test():
-    dns_resolver = DNSResolver()
-    loop = eventloop.EventLoop()
-    dns_resolver.add_to_loop(loop)
-
-    global counter
-    counter = 0
-
-    def make_callback():
-        global counter
-
-        def callback(result, error):
-            global counter
-            # TODO: what can we assert?
-            print(result, error)
-            counter += 1
-            if counter == 9:
-                dns_resolver.close()
-                loop.stop()
-        a_callback = callback
-        return a_callback
-
-    assert(make_callback() != make_callback())
-
-    dns_resolver.resolve(b'google.com', make_callback())
-    dns_resolver.resolve('google.com', make_callback())
-    dns_resolver.resolve('example.com', make_callback())
-    dns_resolver.resolve('ipv6.google.com', make_callback())
-    dns_resolver.resolve('www.facebook.com', make_callback())
-    dns_resolver.resolve('ns2.google.com', make_callback())
-    dns_resolver.resolve('invalid.@!#$%^&$@.hostname', make_callback())
-    dns_resolver.resolve('toooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'long.hostname', make_callback())
-    dns_resolver.resolve('toooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'ooooooooooooooooooooooooooooooooooooooooooooooooooo'
-                         'long.hostname', make_callback())
-
-    loop.run()
-
-
-if __name__ == '__main__':
-    test()

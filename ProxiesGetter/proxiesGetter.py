@@ -1,5 +1,6 @@
 #!/user/bin/python3
 #!-*-coding:utf-8-*-
+
 import re
 import sys
 import os
@@ -13,6 +14,7 @@ from threading import Thread
 import logging
 from Util.getConfig import GetProConfig
 from base64 import b64decode
+
 
 def dbProxiesWorkout():
     '''
@@ -69,7 +71,7 @@ class DBProxiesGetterProcess(object):
             itime = time() - self._mtime
             if itime<0:
                 self._mtime = time()
-                logging.warn('DBProxiesGetterProcess time error')
+                logging.warning('DBProxiesGetterProcess time error')
                 continue
             interval = self._interval - itime
             if interval > 0:
@@ -85,7 +87,7 @@ class RowProxiesGetterProcesses(object):
 
         self._mtime = time()
         self._interval = GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].row_proxies_getter_process_interval
-        self.method_list = [k for k in Methods.__dict__.keys() if k.startswith('method')]
+        self.method_list = [k for k in Methods.__dict__.keys() if k.startswith('freeProxy')]
         self.last_end_time = -1
         self.pwd = os.path.split(os.path.realpath(__file__))[0]
         self.methods_path = os.path.join(self.pwd,'methods.py')
@@ -98,9 +100,26 @@ class RowProxiesGetterProcesses(object):
         while True:
         #while self.GLOBAL_VARIABLE['RUNNING']:
             try:
-
+                method_aiaiable_list = []
+                # 差从每个方法中取几个试试，看看方法的可用性
                 for method in self.method_list:
-                    getattr(Methods, method)()
+                    import socket
+                    socket.setdefaulttimeout(10)
+                    try:
+                        #for proxy in getattr(Methods, method)():
+                        gen = getattr(Methods, method)()
+                        #for i in range(5):
+                        next(gen)
+                        method_aiaiable_list.append(method)
+                        #logging.info('[+]method available : %s' % method)
+                            #logging.info(proxy)
+                    except Exception as e:
+                        logging.info('[-]method unavailable : %s'%method)
+                #logging.info(method_aiaiable_list)
+                for method in method_aiaiable_list:
+                    for proxy in getattr(Methods, method)():
+                            GLOBAL.PRIORITY_QUEUE_2.put(
+                                {'proxy': proxy, 'type': 'confirm'})
             except Exception as e:
                 #print('proxiesGetter : %r'%e)
                 logging.warn('RowProxiesGetterProcesses:%s'%e)

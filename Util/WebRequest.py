@@ -16,7 +16,7 @@ from requests.models import Response
 import requests
 import random
 import time
-
+import logging
 
 class WebRequest(object):
     def __init__(self, *args, **kwargs):
@@ -51,8 +51,8 @@ class WebRequest(object):
                 'Connection': 'keep-alive',
                 'Accept-Language': 'zh-CN,zh;q=0.8'}
 
-    def get(self, url, header=None, retry_time=3, timeout=30,
-            retry_flag=list(), retry_interval=5, *args, **kwargs):
+    def get(self, url, header=None, retry_time=1, timeout=30,
+            retry_flag=list(), retry_interval=3, logging_error=False, *args, **kwargs):
         """
         get method
         :param url: target url
@@ -76,11 +76,13 @@ class WebRequest(object):
                     raise Exception
                 return html
             except Exception as e:
-                print(e)
                 retry_time -= 1
                 if retry_time <= 0:
                     # 多次请求失败
-                    resp = Response()
-                    resp.status_code = 200
-                    return resp
+                    if logging_error:
+                        logging.warning('{0} ,{1}'.format(url,e))
+                    raise Exception(e)
+                    #resp = Response()
+                    #resp.status_code = 200
+                    #return resp
                 time.sleep(retry_interval)
