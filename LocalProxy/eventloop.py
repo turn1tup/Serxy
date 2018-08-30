@@ -10,7 +10,6 @@ import errno
 import logging
 from collections import defaultdict
 
-from LocalProxy import shell
 from LocalProxy.common import  RejectHostException
 
 __all__ = ['EventLoop', 'POLL_NULL', 'POLL_IN', 'POLL_OUT', 'POLL_ERR',
@@ -198,7 +197,8 @@ class EventLoop(object):
                     except RejectHostException:
                         pass
                     except (OSError, IOError) as e:
-                        shell.print_exception(e)
+                        import traceback
+                        traceback.print_exc()
             now = time.time()
             if asap or now - self._last_time >= TIMEOUT_PRECISION:
                 for callback in self._periodic_callbacks:

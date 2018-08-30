@@ -1,15 +1,5 @@
-
-# !/usr/bin/env python
 #-*-encoding:utf-8-*-
-#部署时候，一定要记得mongodb的匿名访问问题
 import sys
-'''
-try:
-    from importlib import reload
-    reload(sys)
-except:
-    reload(sys)
-    '''
 sys.path.append('..')
 
 from multiprocessing import Process

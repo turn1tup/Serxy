@@ -10,6 +10,7 @@ from time import sleep
 from time import time
 #from Util.utilFunction import proxy_is_avaiable_https
 from Util.utilFunction import proxy_is_avaiable
+from Util.utilFunction import proxy_support_https
 from Util.utilFunction import record_proxy_server
 from Util.utilFunction import verify_proxy_format
 from DataAccess.mongodb import MongodbConnector
@@ -127,6 +128,9 @@ class ConfirmThread(Thread):
                             self._db_connector.update({'proxy': food['proxy']},{'$inc': {'score':-1}})
                         continue
                     else:
+                        if not food.get('from_db'):
+                            proxy_support_https(food)
+                            #logging.info(food)
                         self._record_server and record_proxy_server(food, self._set_lock, self._record_set, timeout=20)
                         food['score']=0
                         self._db_connector.put({'proxy': food['proxy']}, food)
@@ -139,6 +143,8 @@ class ConfirmThread(Thread):
                         self._db_connector.update({'proxy': food['proxy']}, {'$set': {'score': score}})
                         #测试使用
                         logging.info('set score successfully:%r'% food['proxy'])
+                        if not food['proxy']:
+                            logging.info(food['proxy'])
                     except Exception as e:
                         logging.warn(e)
                 if food['type'] == 'forbidden':

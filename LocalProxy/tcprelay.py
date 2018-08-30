@@ -1,17 +1,12 @@
-from __future__ import absolute_import, division, print_function, \
-    with_statement
 import os
 import time
 import socket
 import errno
-import struct
 import logging
 import traceback
-import random
-from Global import GLOBAL
-from LocalProxy import eventloop, shell, common
+from LocalProxy import eventloop, common
 from LocalProxy.common import parse_header
-from queue import Queue
+
 # we clear at most TIMEOUTS_CLEAN_SIZE timeouts each time
 TIMEOUTS_CLEAN_SIZE = 512
 
@@ -180,7 +175,8 @@ class TCPRelayHandler(object):
                             errno.EWOULDBLOCK):
                 uncomplete = True
             else:
-                shell.print_exception(e)
+                if self._config['verbose']:
+                    traceback.print_exc()
                 self.destroy()
                 return False
         if uncomplete:
@@ -235,19 +231,28 @@ class TCPRelayHandler(object):
 
     def _handle_stage_addr(self, data):
         try:
-            dest_host = parse_header(data)
-            if dest_host is None:
+            dest_data_tuple = parse_header(data)
+            if dest_data_tuple is None:
                 raise Exception('can not parse header')
-            data = dest_host[2]
+            r_dest_host = '%s:%d' % (dest_data_tuple[0], dest_data_tuple[1]) if self._config[
+                                                                                    'recognize_host_type'] == 2 else \
+            dest_data_tuple[0]
+            self.r_dest_host = r_dest_host
+            if self._config['black_host_enable']:
+                for b in self._config.get('black_host_list') or []:
+                    if b :
+                        if dest_data_tuple[0].endswith(b):
+                            logging.warning('black host : %s'%dest_data_tuple[0])
+                            return
+            data = dest_data_tuple[2]
 
             logging.info('connecting %s:%d from %s:%d' %
-                         (str(dest_host[0]), int(dest_host[1]),
+                         (str(dest_data_tuple[0]), int(dest_data_tuple[1]),
                           self._client_address[0], self._client_address[1]))
 
 
 
-            r_dest_host = '%s:%d'%(dest_host[0],dest_host[1])if self._config['recognize_host_type'] == 2 else dest_host[0]
-            self.r_dest_host = r_dest_host
+
 
 
             if self._config['white_host_enable'] and r_dest_host not in self._config['white_host']:
@@ -260,10 +265,11 @@ class TCPRelayHandler(object):
             max = self._config['proxies_pool_max'].get(r_dest_host) or self._config['proxies_pool_max'].get('Global') or 30
             min = self._config['proxies_pool_min'].get(r_dest_host) or self._config['proxies_pool_min'].get('Global') or 10
             anonymous = self._config['anonymous']
+            https_support = dest_data_tuple[3]
 
             def _p(limit, anonymous=False):
                 return self._config['db_connector'].get_all(
-                    {'score': {'$gt': -1}, 'anonymous': {'$in': [True, anonymous]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
+                    {'score': {'$gt': -1}, 'anonymous': {'$in': [True, anonymous]}, 'https_support': {'$in': [True, https_support]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
 
             if not self._config['host2dict'].get(r_dest_host):
                 #在本地代理服务器这进行数据库查询合适吗，有优化方案吗
@@ -363,7 +369,6 @@ class TCPRelayHandler(object):
                     self._update_stream(STREAM_DOWN, WAIT_STATUS_READING)
                     return
                 except Exception as e:
-                    shell.print_exception(e)
                     if self._config['verbose']:
                         traceback.print_exc()
         self.destroy()
@@ -428,7 +433,6 @@ class TCPRelayHandler(object):
             self._write_to_sock(data, self._local_sock)
             self._data_send = True
         except Exception as e:
-            shell.print_exception(e)
             if self._config['verbose']:
                 traceback.print_exc()
             # TODO use logging when debug completed
@@ -532,8 +536,6 @@ class TCPRelayHandler(object):
                 else:
                     logging.info('[*] no data')
             except Exception as e:
-                logging.info(e)
-                #shell.print_exception(e)
                 if self._config['verbose']:
                     traceback.print_exc()
 
@@ -632,7 +634,6 @@ class TCPRelay(object):
         # we just need a sorted last_activity queue and it's faster than heapq
         # in fact we can do O(1) insertion/remove so we invent our own
         if self._timeouts:
-            logging.log(shell.VERBOSE_LEVEL, 'sweeping timeouts')
             now = time.time()
             length = len(self._timeouts)
             pos = self._timeout_offset
@@ -664,9 +665,9 @@ class TCPRelay(object):
     def handle_event(self, sock, fd, event):
         # handle events and dispatch to handlers
 
-        if sock:
-            logging.log(shell.VERBOSE_LEVEL, 'fd %d %s', fd,
-                        eventloop.EVENT_NAMES.get(event, event))
+        # if sock:
+        #     logging.log(shell.VERBOSE_LEVEL, 'fd %d %s', fd,
+        #                 eventloop.EVENT_NAMES.get(event, event))
         if sock == self._server_socket:
             if event & eventloop.POLL_ERR:
                 # TODO
@@ -683,7 +684,6 @@ class TCPRelay(object):
                                 errno.EWOULDBLOCK):
                     return
                 else:
-                    shell.print_exception(e)
                     if self._config['verbose']:
                         traceback.print_exc()
         else:

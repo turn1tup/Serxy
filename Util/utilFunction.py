@@ -49,13 +49,18 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
         proxy = proxy.decode('utf-8')
     proxies = {"http": "http://{0}".format(proxy)}
     try:
+        stime = time.time()
         rsp = requests.get(dst_url, proxies=proxies, timeout=10, verify=False)
         #if rsp.status_code == 400:
         #    logging.warn('[!] 400 : %s' %proxy)
         if rsp.status_code != 200: return False
+        etime = time.time()
+        latency = '%.2f'%(etime - stime)
+        #logging.info('latency : %.2f'%latency)
         represent_addr_list = [i.strip() for i in json.loads(rsp.content.decode()).get('origin').split(',')]
         proxy_addr=food['proxy'].split(':')[0]
         food['anonymous'] = not len(represent_addr_list) > 1
+        food['latency'] = latency
         return proxy_addr in represent_addr_list
     except Exception as e:
         return False
@@ -103,12 +108,15 @@ def record_proxy_server(food, set_lock, record_set, timeout = 20):
                    if server not in record_set:
                        record_set.add(server)
                        GLOBAL.PRIORITY_QUEUE_2.put({'type':'record_server','server':server})
+                       #if 'nginx' in server or 'Apache' in server:
+                       #    logging.info('[hehe] something interesting : {0} - {1}'.format(food['proxy'], server))
     except Exception as e:
         logging.debug(e)
 
-def proxy_is_avaiable_https(food,timeout = 20):
+
+def proxy_support_https(food,timeout = 20):
     '''
-    仅获取能访问HTTPS的代理
+    有的代理不支持https（隧道代理）
     :param food:
     :param timeout:
     :return:
@@ -129,10 +137,13 @@ def proxy_is_avaiable_https(food,timeout = 20):
         recv_data = recv_data.decode()
         resp_line = recv_data.split('\r\n\r\n')[0].split('\r\n')[0]
         if 'Connection established' in resp_line:
+            food['https_support'] = True
             return True
     except Exception as e:
-        logging.debug(e)
+        #logging.debug(e)
+        food['https_support'] = False
         return False
+    food['https_support'] = False
     return False
 if __name__ == '__main__':
     proxy_is_avaiable_https('118.190.95.43:9001')

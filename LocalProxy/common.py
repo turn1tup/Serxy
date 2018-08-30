@@ -131,6 +131,10 @@ CRLF=b'\r\n'
 SPACE = b'\x20'
 #LF=b'\n'
 def parse_header(data):
+    '''
+    :param data: client http request (whole)
+    :return: destination ip adredd, port, hppt request body data, normal http request or a tunnel request
+    '''
     #print(type(data))
     data_list = data.split(CRLF+CRLF)
     #addrtype = ADDRTYPE_IPV4
@@ -154,6 +158,10 @@ def parse_header(data):
                     return None
             break
     line = data_list[0].split(CRLF)[0]
+
+    https_support = True if (len(line) > 7 and line[0:7] == b'CONNECT') else False
+
+
     if (len(line)>=7 and line[0:7] != b'CONNECT') or len(line)<7:
         request_line_list = line.split(SPACE)
         if len(request_line_list) > 2:
@@ -168,7 +176,7 @@ def parse_header(data):
                 data = data.replace(line,line_new)
                 #print(data)
     if dest_addr:
-        return (to_str(dest_addr),int(dest_port),data)
+        return (to_str(dest_addr), int(dest_port), data, https_support)
     return None
 
 

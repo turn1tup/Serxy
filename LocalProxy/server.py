@@ -4,7 +4,7 @@ import logging
 import signal
 from Global import GLOBAL
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../'))
-from LocalProxy import shell, eventloop, tcprelay, asyncdns
+from LocalProxy import eventloop, tcprelay, asyncdns
 from DataAccess.mongodb import MongodbConnector
 from Util.getConfig import GetProConfig
 
@@ -34,6 +34,10 @@ def get_config():
         config['recognize_host_type'] = pro_config['Global']['recognize_host_type']
         config['white_host_enable'] = True if pro_config['Global']['white_host_enable'] == 'True' else False
         config['white_host'] = [str(k) for k in pro_config.keys()]
+
+        config['black_host_enable'] = _f('black_host_enable',False,None)['Global']
+        config['black_host_list'] = _f('black_host_list',False,None)['Global'].split(',')
+
         config['anonymous'] = True if pro_config['Global']['anonymous'] == 'True' else False
 
         config['db_connector'] = MongodbConnector()
@@ -45,6 +49,7 @@ def get_config():
         config['forbidden_content'] = _f('forbidden_content','not 200',None)
         #config['retrive_time'] = _f('retrive_time', '60*60*1', eval)
         config['host_to_unavaiable_count'] = {}
+
         return config
 
     except Exception as e:
@@ -84,7 +89,8 @@ def Server():
             #daemon.set_user(config.get('user', None))
             loop.run()
         except Exception as e:
-            shell.print_exception(e)
+            import traceback
+            traceback.print_exc()
             sys.exit(1)
 
     if int(config['workers']) > 1:
