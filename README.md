@@ -13,7 +13,7 @@ python3.5 +
 本地代理服务器作为 客户端 与 远程代理服务器的 中间人，本地代理服务器与双方都建立了TCP套接字,能否进行HTTPS通信主要取决于远程代理服务器是否支持`CONNECT`方法。
 代理池会定期执行`ProxiesGetter/methods.py`中的方法，抓取新的代理。
 
-####安装使用
+#### 安装过程
 
 `debian`下操作过程
 apt-get install mongodb
