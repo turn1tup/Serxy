@@ -16,12 +16,19 @@ python3.5 +
 #### 安装过程
 
 `debian`下操作过程
+
 apt-get install mongodb
+
 service mongodb start
+
 git clone git@github.com:turn1tup/Serxy.git
+
 cd Serxy
+
 python3 -m pip install requirements.txt
+
 cd Run
+
 python3 main.py
 
 #### 特性
