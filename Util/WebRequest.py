@@ -12,7 +12,6 @@
 """
 __author__ = 'J_hao'
 
-from requests.models import Response
 import requests
 import random
 import time
@@ -51,7 +50,7 @@ class WebRequest(object):
                 'Connection': 'keep-alive',
                 'Accept-Language': 'zh-CN,zh;q=0.8'}
 
-    def get(self, url, header=None, retry_time=1, timeout=30,
+    def get(self, url, header=None, retry_time=2, timeout=30,
             retry_flag=list(), retry_interval=3, logging_error=False, *args, **kwargs):
         """
         get method

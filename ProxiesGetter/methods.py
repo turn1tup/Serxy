@@ -91,10 +91,7 @@ class Methods(object):
                 tree = getHtmlTree(page_url)
                 proxy_list = tree.xpath('.//table[@id="ip_list"]//tr[position()>1]')
                 for proxy in proxy_list:
-                    #try:
                     yield ':'.join(proxy.xpath('./td/text()')[0:2])
-                    #except Exception as e:
-                    #    logging.warning(e)
 
     @staticmethod
     def freeProxyFifth():

@@ -51,7 +51,11 @@ class DBProxiesGetterProcess(object):
                 sleep(10)
                 continue
 
-            for dict_ in self._db_connector.get_all({}):
+             #删除分数过低的不可用代理
+            score_delete = GLOBAL.GLOBAL_VARIABLE['SERVER_CONFIG'].score_delete
+            GLOBAL.PRIORITY_QUEUE_2.put({'type': 'remove_proxy', 'score': score_delete})
+
+            for dict_ in self._db_connector.get_all({'score': {'$gt': score_delete}}):
                 for k,v in dict_.items():
                     # 如果该代理存在被禁止的host，则获取其retrive time 复活时间，如果时间到了则让其复活
                     if k.startswith('host:') and b64decode(k[5:]).decode() in self._retrlive_host:
@@ -66,6 +70,7 @@ class DBProxiesGetterProcess(object):
                             break
                 dict_['from_db']=True
                 GLOBAL.PRIORITY_QUEUE_3.put(dict_)
+
             GLOBAL.GLOBAL_VARIABLE['DB_PROXIES_WORKOUT'] = False
 
             itime = time() - self._mtime

@@ -65,6 +65,7 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     except Exception as e:
         return False
 
+
 def verify_proxy_format(proxy):
     """
     检查代理格式
@@ -143,7 +144,10 @@ def proxy_support_https(food,timeout = 20):
         #logging.debug(e)
         food['https_support'] = False
         return False
-    food['https_support'] = False
-    return False
+    else:
+        food['https_support'] = False
+        return False
+
+
 if __name__ == '__main__':
-    proxy_is_avaiable_https('118.190.95.43:9001')
+    proxy_support_https('118.190.95.43:9001')

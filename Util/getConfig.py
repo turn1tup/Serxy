@@ -44,6 +44,13 @@ class GetServerConfig(object):
     def record_server(self):
         return eval(self.config_file.get('ProxiesGetter','RecordServer'))
 
+    @property
+    def score_available(self):
+        return eval(self.config_file.get('ProxyScore','ScoreAvailable'))
+
+    @property
+    def score_delete(self):
+        return eval(self.config_file.get('ProxyScore','ScoreDelete'))
 
 class GetProConfig():
     def __init__(self):

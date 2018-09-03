@@ -34,24 +34,32 @@ class ConfirmerProcesses(object):
         self._set_lock = multiprocessing.Lock()
         self._record_set = set()
         pwd = os.path.split(os.path.realpath(__file__))[0]
-        file_path = os.path.join(os.path.join(os.path.split(pwd)[0], 'ProxiesConfirmer'), 'record_server.txt')
+        self._file_path = os.path.join(os.path.join(os.path.split(pwd)[0], 'ProxiesConfirmer'), 'record_server.txt')
         try:
-            with open(file_path) as f:
+            with open(self._file_path) as f:
                 for l in f:
                     self._record_file.add(l.strip())
         except:
             pass
-        self._record_file = open(file_path,'a')
+        self._record_file = open(self._file_path,'a')
         self._file_lock = multiprocessing.Lock()
 
         start_run and self.run()
 
     def run(self):
         threads =[]
-        threads.append(Thread(target=remove_proxy))
+        #threads.append(Thread(target=remove_proxy))
         level_1_num = int(GLOBAL.GLOBAL_VARIABLE['CONFIRMER_THREADS_NUM']/2)
         level_2_num = int(GLOBAL.GLOBAL_VARIABLE['CONFIRMER_THREADS_NUM']/4)
         level_3_num = int(GLOBAL.GLOBAL_VARIABLE['CONFIRMER_THREADS_NUM'] - level_1_num - level_2_num)
+        def emmm():
+            with open(self._file_path) as f:
+                l = [line.strip() for line in f]
+                self._record_set = set(l)
+            with open(self._file_path,'w') as f:
+                for item in self._record_set:
+                    f.write('%s\n'%item)
+        emmm()
         for i in range(level_1_num):
             #threads.append(Thread(target=confirm,args=(list_1,i)))
             threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,0 ,i+1,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
@@ -67,16 +75,16 @@ class ConfirmerProcesses(object):
         for t in threads:
             t.join()
 
-
+'''
 def remove_proxy():
-    '''
+    
     定期删除长期不可用的代理
     :return:
-    '''
+
     while True:
         GLOBAL.PRIORITY_QUEUE_2.put({'type':'remove_proxy','score':-5})
         sleep(300)
-
+'''
 
 class ConfirmThread(Thread):
     def __init__(self ,list_ ,offset ,mark ,set_lock ,record_set,file_lock,record_file,record_server):

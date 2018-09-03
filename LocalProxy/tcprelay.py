@@ -251,10 +251,6 @@ class TCPRelayHandler(object):
                           self._client_address[0], self._client_address[1]))
 
 
-
-
-
-
             if self._config['white_host_enable'] and r_dest_host not in self._config['white_host']:
                 logging.warn('Reject the host:{}'.format(r_dest_host))
                 raise common.RejectHostException
@@ -266,10 +262,10 @@ class TCPRelayHandler(object):
             min = self._config['proxies_pool_min'].get(r_dest_host) or self._config['proxies_pool_min'].get('Global') or 10
             anonymous = self._config['anonymous']
             https_support = dest_data_tuple[3]
-
+            score_available = self._config['GLOBAL'].GLOBAL_VARIABLE['SERVER_CONFIG'].score_available
             def _p(limit, anonymous=False):
                 return self._config['db_connector'].get_all(
-                    {'score': {'$gt': -1}, 'anonymous': {'$in': [True, anonymous]}, 'https_support': {'$in': [True, https_support]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
+                    {'score': {'$gt': score_available}, 'anonymous': {'$in': [True, anonymous]}, 'https_support': {'$in': [True, https_support]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
 
             if not self._config['host2dict'].get(r_dest_host):
                 #在本地代理服务器这进行数据库查询合适吗，有优化方案吗
@@ -529,7 +525,8 @@ class TCPRelayHandler(object):
                         {'type': type, 'proxy': proxy, 'host': self.r_dest_host, 'score': -1})
                 else:
                     #connection_reset / timeout
-                    self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
+                    if hasattr(self, 'r_dest_host'):
+                        self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
                 #.#测试使用
                 if  self._data_send :
                     logging.info('[*] send partition data')
