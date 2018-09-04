@@ -202,7 +202,7 @@ class TCPRelayHandler(object):
 
     def _remove_proxy(self,proxy=None):
         '''
-        移除host2dict对象中的指定代理(self._config['host2dict'][self.r_dest_host])
+        移除host2dict对象中的指定代理(self._config['host2dict'][self.r_dst_host])
         :return: boolean
         '''
 
@@ -216,17 +216,17 @@ class TCPRelayHandler(object):
         if not proxy:
             #logging.debug('remove proxy error,no proxy')
             return
-        if self._config.get('host2dict') and self.r_dest_host and self._config['host2dict'].get(self.r_dest_host):
+        if self._config.get('host2dict') and self.r_dst_host and self._config['host2dict'].get(self.r_dst_host):
             #foreach list object
-            length = len(self._config['host2dict'][self.r_dest_host])
+            length = len(self._config['host2dict'][self.r_dst_host])
             for i in range(length):
-                if self._config['host2dict'][self.r_dest_host][i]['proxy'] == proxy:
-                    self._config['host2dict'][self.r_dest_host].remove(self._config['host2dict'][self.r_dest_host][i])
+                if self._config['host2dict'][self.r_dst_host][i]['proxy'] == proxy:
+                    self._config['host2dict'][self.r_dst_host].remove(self._config['host2dict'][self.r_dst_host][i])
                     logging.info('remove proxy from memory:%r'%proxy)
                     return proxy
         return
-#            remote_addr, remote_port = self._config['host2dict'][r_dest_host] \
-#                [self._config['host2position'][r_dest_host]] \
+#            remote_addr, remote_port = self._config['host2dict'][r_dst_host] \
+#                [self._config['host2position'][r_dst_host]] \
 #                    ['proxy'].split(':')
 
     def _handle_stage_addr(self, data):
@@ -234,10 +234,10 @@ class TCPRelayHandler(object):
             dest_data_tuple = parse_header(data)
             if dest_data_tuple is None:
                 raise Exception('can not parse header')
-            r_dest_host = '%s:%d' % (dest_data_tuple[0], dest_data_tuple[1]) if self._config[
-                                                                                    'recognize_host_type'] == 2 else \
-            dest_data_tuple[0]
-            self.r_dest_host = r_dest_host
+            r_dst_host = '%s:%d' % (dest_data_tuple[0], dest_data_tuple[1]) \
+                if self._config['recognize_host_type'] == 2 \
+                else dest_data_tuple[0]
+            self.r_dst_host = r_dst_host
             if self._config['black_host_enable']:
                 for b in self._config.get('black_host_list') or []:
                     if b :
@@ -251,57 +251,57 @@ class TCPRelayHandler(object):
                           self._client_address[0], self._client_address[1]))
 
 
-            if self._config['white_host_enable'] and r_dest_host not in self._config['white_host']:
-                logging.warn('Reject the host:{}'.format(r_dest_host))
+            if self._config['white_host_enable'] and r_dst_host not in self._config['white_host']:
+                logging.warn('Reject the host:{}'.format(r_dst_host))
                 raise common.RejectHostException
             if not self._config.get('host2dict'):
                 self._config['host2dict'] = {}
                 self._config['host2position'] = {}
 
-            max = self._config['proxies_pool_max'].get(r_dest_host) or self._config['proxies_pool_max'].get('Global') or 30
-            min = self._config['proxies_pool_min'].get(r_dest_host) or self._config['proxies_pool_min'].get('Global') or 10
+            max = self._config['proxies_pool_max'].get(r_dst_host) or self._config['proxies_pool_max'].get('Global') or 30
+            min = self._config['proxies_pool_min'].get(r_dst_host) or self._config['proxies_pool_min'].get('Global') or 10
             anonymous = self._config['anonymous']
             https_support = dest_data_tuple[3]
             score_available = self._config['GLOBAL'].GLOBAL_VARIABLE['SERVER_CONFIG'].score_available
             def _p(limit, anonymous=False):
                 return self._config['db_connector'].get_all(
-                    {'score': {'$gt': score_available}, 'anonymous': {'$in': [True, anonymous]}, 'https_support': {'$in': [True, https_support]},'host:%s'%self.r_dest_host:{'$exists':False}}, limit=limit)
+                    {'score': {'$gt': score_available}, 'anonymous': {'$in': [True, anonymous]}, 'https_support': {'$in': [True, https_support]},'host:%s'%self.r_dst_host:{'$exists':False}}, limit=limit)
 
-            if not self._config['host2dict'].get(r_dest_host):
+            if not self._config['host2dict'].get(r_dst_host):
                 #在本地代理服务器这进行数据库查询合适吗，有优化方案吗
                 #想过用协程，但是好像搞不了..
                 proxies = _p(max,anonymous)
                 #测试使用
                 #logging.info(proxies)
-                self._config['host2dict'][r_dest_host] = proxies
-                self._config['host2position'][r_dest_host] = 0
+                self._config['host2dict'][r_dst_host] = proxies
+                self._config['host2position'][r_dst_host] = 0
 
             #测试使用
-            logging.info('[-]host:%s pool length:%d'%(r_dest_host,len(self._config['host2dict'][r_dest_host])))
+            logging.info('[-]host:%s pool length:%d'%(r_dst_host,len(self._config['host2dict'][r_dst_host])))
 
-            pool_length = len(self._config['host2dict'][r_dest_host])
+            pool_length = len(self._config['host2dict'][r_dst_host])
             #如果池子代理数小于最低下限，则从数据库中补充到max
             if pool_length < min:
                 diff = max - pool_length
-                self._config['host2dict'][r_dest_host].extend(_p(diff,anonymous))
+                self._config['host2dict'][r_dst_host].extend(_p(diff,anonymous))
 
-            pool_length = len(self._config['host2dict'][r_dest_host])
+            pool_length = len(self._config['host2dict'][r_dst_host])
             #测试使用
-            logging.info('[+]host:%s pool length:%d'%(r_dest_host,pool_length))
+            logging.info('[+]host:%s pool length:%d'%(r_dst_host,pool_length))
 
             if(pool_length)<1:
                 logging.warn('[!] no proxy is avaiable!!!')
                 self.destroy()
                 return
 
-            remote_addr, remote_port = self._config['host2dict'][r_dest_host] \
-                [self._config['host2position'][r_dest_host]] \
+            remote_addr, remote_port = self._config['host2dict'][r_dst_host] \
+                [self._config['host2position'][r_dst_host]] \
                     ['proxy'].split(':')
 
             #测试使用
             #remote_addr, remote_port = '127.0.0.7',8899
 
-            self._config['host2position'][r_dest_host] = (self._config['host2position'][r_dest_host]+1)%len(self._config['host2dict'][r_dest_host])
+            self._config['host2position'][r_dst_host] = (self._config['host2position'][r_dst_host]+1)%len(self._config['host2dict'][r_dst_host])
             self._remote_address = (common.to_str(remote_addr), int(remote_port))
             # pause reading
             self._update_stream(STREAM_UP, WAIT_STATUS_WRITING)
@@ -416,11 +416,11 @@ class TCPRelayHandler(object):
         if not data:
             self.destroy()
             return
-        forbidden, type = common.forbidden_or_not(self._config, self.r_dest_host, data)
+            forbidden, type = common.forbidden_or_not(self._config, self.r_dst_host, data)
         if forbidden:
             logging.info('Forbidden event -- proxy:{0}-- website:{1}'.format(
                 self._remote_sock.getpeername(),
-                self.r_dest_host))
+                self.r_dst_host))
             self.destroy(type='forbidden')
             return
 
@@ -522,11 +522,11 @@ class TCPRelayHandler(object):
                 proxy = self._remove_proxy()
                 if type == 'forbidden':
                     self._config['GLOBAL'].PRIORITY_QUEUE_1.put(
-                        {'type': type, 'proxy': proxy, 'host': self.r_dest_host, 'score': -1})
+                        {'type': type, 'proxy': proxy, 'host': self.r_dst_host, 'score': -1})
                 else:
                     #connection_reset / timeout
-                    if hasattr(self, 'r_dest_host'):
-                        self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dest_host,'score':-1})
+                    if hasattr(self, 'r_dst_host'):
+                        self._config['GLOBAL'].PRIORITY_QUEUE_1.put({'type': type, 'proxy': proxy,'host':self.r_dst_host,'score':-1})
                 #.#测试使用
                 if  self._data_send :
                     logging.info('[*] send partition data')

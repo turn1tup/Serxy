@@ -1,27 +1,19 @@
+
 import sys
 sys.path.append('..')
 from Util.utilFunction import getHtmlTree
-from Global import GLOBAL
-from time import sleep
-import logging
 from Util.WebRequest import WebRequest
 import re
+
 
 class Methods(object):
     def __init__(self):
         pass
 
     @staticmethod
-    def _method_test():
-        sleep(1)
-        print('method test')
-        GLOBAL.PRIORITY_QUEUE_2.put({'proxy': '118.114.77.47:8080', 'type': 'confirm','from_db':False})
-
-    @staticmethod
     def freeProxyFirst(page=10):
         """
         无忧代理 http://www.data5u.com/
-        几乎没有能用的
         :param page: 页数
         :return:
         """
@@ -34,10 +26,7 @@ class Methods(object):
             html_tree = getHtmlTree(url)
             ul_list = html_tree.xpath('//ul[@class="l2"]')
             for ul in ul_list:
-                #try:
                 yield ':'.join(ul.xpath('.//li/text()')[0:2])
-                #except Exception as e:
-                #   logging.warning(e)
 
     @staticmethod
     def freeProxySecond(area=33, page=1):

@@ -51,17 +51,15 @@ def proxy_is_avaiable(food,dst_url='http://httpbin.org/ip'):
     try:
         stime = time.time()
         rsp = requests.get(dst_url, proxies=proxies, timeout=10, verify=False)
-        #if rsp.status_code == 400:
-        #    logging.warn('[!] 400 : %s' %proxy)
         if rsp.status_code != 200: return False
         etime = time.time()
-        latency = '%.2f'%(etime - stime)
-        #logging.info('latency : %.2f'%latency)
-        represent_addr_list = [i.strip() for i in json.loads(rsp.content.decode()).get('origin').split(',')]
-        proxy_addr=food['proxy'].split(':')[0]
-        food['anonymous'] = not len(represent_addr_list) > 1
-        food['latency'] = latency
-        return proxy_addr in represent_addr_list
+        addr_list = [i.strip() for i in json.loads(rsp.content.decode()).get('origin').split(',')]
+        proxy_addr = food['proxy'].split(':')[0]
+        #是否匿名
+        food['anonymous'] = not len(addr_list) > 1
+        #延迟
+        food['latency'] =  '%.2f'%(etime - stime)
+        return proxy_addr in addr_list
     except Exception as e:
         return False
 
@@ -77,10 +75,17 @@ def verify_proxy_format(proxy):
     return len(_proxy) == 1 and _proxy[0] == proxy
 
 
-def record_proxy_server(food, set_lock, record_set, timeout = 20):
+def record_proxy_server(food, set_lock, record_set, timeout=20):
+    '''
+    记录代理服务器HTTP Response 的Server字段信息
+    :param food:
+    :param set_lock:
+    :param record_set:
+    :param timeout:
+    :return:
+    '''
     try:
         proxy = food['proxy']
-        #logging.info(proxy)
         socket.setdefaulttimeout(timeout)
         if type(proxy) == bytes:
             proxy = proxy.decode('utf-8')
@@ -98,6 +103,7 @@ def record_proxy_server(food, set_lock, record_set, timeout = 20):
         while len(recv_data) ==1024:
             try:
                 buffer = conn.recv(1024)
+            # 套接字超时
             except:
                 break
             recv_data += buffer
@@ -109,15 +115,15 @@ def record_proxy_server(food, set_lock, record_set, timeout = 20):
                    if server not in record_set:
                        record_set.add(server)
                        GLOBAL.PRIORITY_QUEUE_2.put({'type':'record_server','server':server})
-                       #if 'nginx' in server or 'Apache' in server:
-                       #    logging.info('[hehe] something interesting : {0} - {1}'.format(food['proxy'], server))
+                       if 'nginx' in server or 'Apache' in server:
+                           logging.info('[!] something interesting : {0} - {1}'.format(food['proxy'], server))
     except Exception as e:
         logging.debug(e)
 
 
 def proxy_support_https(food,timeout = 20):
     '''
-    有的代理不支持https（隧道代理）
+    查看代理是否支持https（隧道代理）
     :param food:
     :param timeout:
     :return:

@@ -1,22 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#
-# Copyright 2013-2015 clowwindy
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
-
-from __future__ import absolute_import, division, print_function, \
-    with_statement
 
 import socket
 import struct
@@ -129,28 +110,23 @@ ADDRTYPE_HOST = 3
 
 CRLF=b'\r\n'
 SPACE = b'\x20'
-#LF=b'\n'
+
+
 def parse_header(data):
     '''
     :param data: client http request (whole)
-    :return: destination ip adredd, port, hppt request body data, normal http request or a tunnel request
+    :return: destination address, port, data, support https or not
     '''
-    #print(type(data))
     data_list = data.split(CRLF+CRLF)
-    #addrtype = ADDRTYPE_IPV4
     dest_addr = None
     dest_port = 80
-    #header_length = None
     if not data_list[0]:
         return None
-    #headers=[]
     for line in data_list[0].split(CRLF):
         if len(line)>6 and b'Host: ' == line[:6]:
-            #logging.info(line)
             host = line[6:]
             host_list = host.split(b':')
             dest_addr = host_list[0]
-            #dest_port = 80
             if len(host_list)-1:
                 try:
                     dest_port=int(host_list[1])
@@ -160,21 +136,15 @@ def parse_header(data):
     line = data_list[0].split(CRLF)[0]
 
     https_support = True if (len(line) > 7 and line[0:7] == b'CONNECT') else False
-
-
     if (len(line)>=7 and line[0:7] != b'CONNECT') or len(line)<7:
         request_line_list = line.split(SPACE)
         if len(request_line_list) > 2:
             uri = to_str(request_line_list[1])
-            #print('uri : %s'%uri)
             if len(uri) < 6 or  (len(uri) >6 and 'http' != uri[0:4].lower() ):
                 uri = 'http://'+to_str(dest_addr)+':'+str(dest_port)+uri
-                #print('uri : %s' % uri)
                 request_line_list[1] = uri.encode()
                 line_new = SPACE.join(request_line_list)
-                #print('line_new %r'%line_new)
                 data = data.replace(line,line_new)
-                #print(data)
     if dest_addr:
         return (to_str(dest_addr), int(dest_port), data, https_support)
     return None
@@ -198,18 +168,25 @@ def get_status_code(data):
 def forbidden_or_not(config,host,data):
     '''
     判断当前使用的代理IP是否被禁止了，用户需要自定义目标站点禁止的方式，
-    但是，仅仅依靠本函数是无法判别所有IP被禁止的情况的，还需要 tcprelay 的其他因素
     在这里，作者认为，IP被禁止后的表现有：
     1）socks 套接字都无法建立
-    2）可以建立TCP连接，返回的页面是特定页面，如安全狗的，但状态码是200
-    3）返回特定的状态码或非200 的
-    这里先实现识别安全狗那种的，通过字符串即可
+    2）可以建立TCP连接，返回的页面是特定页面，如安全狗的
+    3）返回特定的状态码或非200 的，其实策略3完全可以被策略2替代
+    对应的识别策略
+    1）客户端请求应为CONNECT，配置 forbidden_type 为 status_code，且 content 为 503
+    （说实话，很多支持CONNECT的代理服务器在遇到目标端口不可用时的表现是超长时间的等待，
+    或者不会返回503，等奇怪现象，所以在这种屏蔽策略下，使用大量IP，限制自己的访问频率最好）
+    2）配置 forbidden_type 为 str （字符串) ，或是 regex （正则），在 content 中填写对应的内容
+    3）配置 forbidden_type 为 status_code，content 填写被屏蔽时的状态码.
+    搞了这么多看起来有用的东西，但由于从免费网站上抓取到的代理的可用性十分低，所以实际上没
+    必要使用这些策略。最好的策略还是限制好自己的访问频率，然后通过本项目的本地代理服务器去
+    访问目标站点。
     :param config:
     :param host:
     :param data:
     :return: boolean value ,distinguish type
     '''
-    #host = self.r_dest_host
+    #host = self.r_dst_host
     #data = to_str(data)
     type = config['forbidden_type'].get(host)
     content = config['forbidden_content'].get(host)
@@ -218,9 +195,13 @@ def forbidden_or_not(config,host,data):
     status_code = get_status_code(data)
 
     if type=='str':
-        return to_bytes(content) in data, 'str'
+        return to_bytes(content) in data
     elif type == 'status_code':
-        pass
+        return str(status_code) in content.split(',')
+    elif type =='regex':
+        import re
+        result = re.findall(content, data)
+        return result is not None
     else:
         pass
     return None,None

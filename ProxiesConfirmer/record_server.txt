@@ -1,29 +1,32 @@
-nginx/1.7.10
-nginx/1.12.1
-NET-EAST-HH/2.0.0
-squid/3.3.12-20140602-r12679
-squid/3.1.10
-nginx/1.15.1
-nginx/1.10.2
-Apache/2.2.15 (Red Hat)
-nginx/1.12.0
-nginx/1.9.14
-squid/3.4.8
-Apache/2.2.22 (Ubuntu)
+Apache/2.4.6 (Win32) mod_jk/1.2.37 mod_evasive2/1.10.1-win PHP/5.4.41
 IocpServer
-Apache/2.2.15 (CentOS)
-nginx/1.12.2
-BigIP
-ATS/7.0.0
-squid/3.1.23
-nginx
-NET-EAST-HD/2.0.0
-squid/3.5.20
-Apache/2.4.2 (Win32) mod_jk/1.2.37 PHP/5.4.41
-squid/3.3.8
-nginx/1.14.0
+nginx/1.15.1
+NET-EAST-HH/2.0.0
 squid/3.1.19
-Mikrotik HttpProxy
 tinyproxy/1.8.3
+Apache/2.4.2 (Win32) mod_jk/1.2.37 PHP/5.4.41
+squid/3.1.10
+nginx/1.7.10
+nginx
+nginx/1.12.1
+Mikrotik HttpProxy
+NET-EAST-HD/2.0.0
+Apache/2.2.15 (Red Hat)
+nginx/1.14.0
+Apache/2.4.18 (Ubuntu)
+Apache/2.2.22 (Ubuntu)
+squid/3.5.20
+nginx/1.12.2
 squid/3.5.12
+nginx/1.15.0
+squid/3.4.8
+ATS/7.0.0
+squid/3.3.12-20140602-r12679
+Apache/2.2.15 (CentOS)
+BigIP
+nginx/1.9.14
+squid/3.1.23
+squid/3.3.8
+nginx/1.12.0
+nginx/1.10.2
 Apache/2.2.4 (Win32)

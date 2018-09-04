@@ -61,30 +61,16 @@ class ConfirmerProcesses(object):
                     f.write('%s\n'%item)
         emmm()
         for i in range(level_1_num):
-            #threads.append(Thread(target=confirm,args=(list_1,i)))
             threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,0 ,i+1,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for i in range(level_2_num):
-            #threads.append(Thread(target=confirm,args=(list_2,i*10)))
             threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,1 ,(i+1)*10,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for i in range(level_3_num):
-            #threads.append(Thread(target=confirm,args=(list_3,i*100)))
             threads.append(ConfirmThread([GLOBAL.PRIORITY_QUEUE_2,GLOBAL.PRIORITY_QUEUE_3,GLOBAL.PRIORITY_QUEUE_1] ,2 ,(i+1)*100,self._set_lock,self._record_set,self._file_lock,self._record_file,self._record_server))
         for t in threads:
             t.daemon = 1
             t.start()
         for t in threads:
             t.join()
-
-'''
-def remove_proxy():
-    
-    定期删除长期不可用的代理
-    :return:
-
-    while True:
-        GLOBAL.PRIORITY_QUEUE_2.put({'type':'remove_proxy','score':-5})
-        sleep(300)
-'''
 
 class ConfirmThread(Thread):
     def __init__(self ,list_ ,offset ,mark ,set_lock ,record_set,file_lock,record_file,record_server):
@@ -124,14 +110,10 @@ class ConfirmThread(Thread):
                 if food['type'] == 'confirm':
                     if not verify_proxy_format(food['proxy']):
                         continue
-
-                    #if not validUsefulProxy(food) :
-                    #    continue
                     #如果代理不可用而且
                     #该代理数据是从数据库查询出来的就需要对其下降评分
                     #其实置为-1 也可以，下降分数对本项目没啥用..
                     if not proxy_is_avaiable(food) :
-                    #if not proxy_is_avaiable_https(food) :
                         if food.get('from_db'):
                             self._db_connector.update({'proxy': food['proxy']},{'$inc': {'score':-1}})
                         continue
@@ -194,33 +176,3 @@ class ConfirmThread(Thread):
                 logging.warning(e)
                 import traceback
                 traceback.print_exc()
-
-'''
-def ring_shift_left(list_ ,offset):
-    for i in range(offset):
-        list_.append(list_.pop(0))
-
-
-def confirm(confirm_queue_tuple,mark):
-    while GLOBAL.GLOBAL_VARIABLE['RUNNING']:
-        # print('thread run')
-        food = None
-
-        try:
-            # print(food)
-            if not confirm_queue_tuple[0].empty():
-                food = confirm_queue_tuple[0].get_nowait()
-            elif not confirm_queue_tuple[1].empty():
-                food = confirm_queue_tuple[1].get_nowait()
-            elif not confirm_queue_tuple[2].empty():
-                food = confirm_queue_tuple[2].get_nowait()
-            if not food:
-                sleep(0.1)
-                pass
-                continue
-            else:
-                # print('321')
-                print('mark:{0} food: {1}'.format(mark, food))
-        except Exception as e:
-            print(e)
-'''
