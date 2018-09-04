@@ -23,7 +23,7 @@ apt-get install mongodb
 
 service mongodb start
 
-git clone git@github.com:turn1tup/Serxy.git
+git clone https://github.com/turn1tup/Serxy.git
 
 cd Serxy
 
