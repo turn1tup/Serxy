@@ -17,6 +17,8 @@ python3.5 +
 
 `debian`下操作过程
 
+python3 --version (要求3.5+)
+
 apt-get install mongodb
 
 service mongodb start
@@ -25,7 +27,7 @@ git clone git@github.com:turn1tup/Serxy.git
 
 cd Serxy
 
-python3 -m pip install -r requirements.txt
+python3 -m pip install -r requirements.txt  (下载超时可以使用豆瓣源` -i https://pypi.douban.com/simple/`)
 
 cd Run
 

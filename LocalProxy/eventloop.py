@@ -1,7 +1,4 @@
-
-from __future__ import absolute_import, division, print_function, \
-    with_statement
-
+#!-*-coding:utf-8-*-
 import os
 import time
 import socket

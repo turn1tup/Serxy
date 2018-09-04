@@ -1,3 +1,4 @@
+#!-*-coding:utf-8-*-
 from multiprocessing import Manager
 from Util.getConfig import GetServerConfig
 from multiprocessing import Queue
