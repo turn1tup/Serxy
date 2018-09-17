@@ -417,7 +417,7 @@ class TCPRelayHandler(object):
         if not data:
             self.destroy()
             return
-            forbidden, type = common.forbidden_or_not(self._config, self.r_dst_host, data)
+        forbidden, type = common.forbidden_or_not(self._config, self.r_dst_host, data)
         if forbidden:
             logging.info('Forbidden event -- proxy:{0}-- website:{1}'.format(
                 self._remote_sock.getpeername(),
